@@ -79,7 +79,7 @@
       <number>1</number>
      </property>
      <property name="maximum">
-      <number>20</number>
+      <number>15</number>
      </property>
     </widget>
     <widget class="QLabel" name="widthLabel">
@@ -92,7 +92,7 @@
       <number>1</number>
      </property>
      <property name="maximum">
-      <number>20</number>
+      <number>15</number>
      </property>
     </widget>
    </widget>
