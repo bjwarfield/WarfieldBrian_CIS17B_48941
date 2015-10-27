@@ -1,12 +1,14 @@
 #ifndef BLOCKSPIECE_H
 #define BLOCKSPIECE_H
 
+//shapw enum maps name to digits 1 - 7
 enum BlockShape {NoShape, ZShape, SShape, LineShape, TShape, SquareShape, LShape, RShape};
 
 class BlocksPiece
 {
 public:
     BlocksPiece() {setShape (NoShape);}
+
 
     void setRandomShape();
     void setShape(BlockShape shape);

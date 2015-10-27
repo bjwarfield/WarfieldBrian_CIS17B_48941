@@ -3,43 +3,68 @@
 #include <QtCore>
 
 
-///set random piece shape (Enum value 1-7)
+/*******************************************************************************
+ *  select a random piece shape (BlocksShape Enum value 1-7), and sets it as the
+ * current shape
+ ******************************************************************************/
 void BlocksPiece::setRandomShape()
 {
     setShape(BlockShape(qrand() % 7 +1));
 }
 
-//return piece shape (Enum value 0-7)
+/*******************************************************************************
+* @returns piece shape (Enum value 0-7)
+*******************************************************************************/
 BlockShape BlocksPiece::shape() const {
     return pieceShape;
 }
 
-//get x coordinate
+/*******************************************************************************
+ * get block segment's x coordinate for the given segment index
+ * @return horizontal coordinate for BlocksPiece segment
+ ******************************************************************************/
 int BlocksPiece::x(int index) const
 {
     return coords[index][0];
 }
 
-//get y coordinate
+/*******************************************************************************
+ * get block segment's y coordinate for the given segment index
+ * @return vertical coordinate for BlocksPiece segment
+ ******************************************************************************/
 int BlocksPiece::y(int index) const
 {
     return coords[index][1];
 }
 
-//set x coordinate
+/*******************************************************************************
+ * Set block segment's x coordinate for the given segment index
+ * @param segment index
+ * @param horizontal coordinate
+ ******************************************************************************/
 void BlocksPiece::setX(int index, int x)
 {
     coords[index][0] = x;
 }
 
-//set y coordinate
+/*******************************************************************************
+ * Set block segment's 7 coordinate for the given segment index
+ * @param segment index
+ * @param vertical coordinate
+ ******************************************************************************/
 void BlocksPiece::setY(int index, int y)
 {
     coords[index][1] = y;
 }
 
-//set coordinates according to block shape
+
+/*******************************************************************************
+ * Setshape function uses a lookup table to associate the relative location for
+ * each BlocksPiece segment
+*******************************************************************************/
 void BlocksPiece::setShape(BlockShape shape){
+    //tridementionial array holds the relative position for each block segment
+    //coordsTable[BlockShape][BlockSegment][RelativeXYPosition]
     static const int coordsTable[8][4][2] = {
         { { 0, 0 },   { 0, 0 },   { 0, 0 },   { 0, 0 } },//[0]NoShape
         { { 0, -1 },  { 0, 0 },   { -1, 0 },  { -1, 1 } },//[1]ZShape
@@ -51,8 +76,9 @@ void BlocksPiece::setShape(BlockShape shape){
         { { 1, -1 },  { 0, -1 },  { 0, 0 },   { 0, 1 } }//[7]RShape
     };
 
-    for (int i = 0; i < 4; i++){
-        for (int j = 0; j < 2; j++){
+
+    for (int i = 0; i < 4; i++){//for each segment
+        for (int j = 0; j < 2; j++){//for x and y
             coords[i][j] = coordsTable[shape][i][j];
         }
 
@@ -60,19 +86,26 @@ void BlocksPiece::setShape(BlockShape shape){
     pieceShape = shape;
 }
 
-//return minimun x coordinate
+
+
+/*******************************************************************************
+ * @return minimum horizontal coordinate occupied by piece segments
+ ******************************************************************************/
 int BlocksPiece::minX() const
 {
+    //capture first segment x value
     int min = coords[0][0];
 
-    for (int i = 0; i < 4; ++i){
-        min = qMin(min, coords[i][0]);
+    for (int i = 0; i < 4; ++i){//for each segment
+        min = qMin(min, coords[i][0]);//capture the min value
     }
 
-    return min;
+    return min;//return min
 }
 
-//return maximum x coordinate
+/*******************************************************************************
+ * @return maximum horizontal coordinate occupied by piece segments
+ ******************************************************************************/
 int BlocksPiece::maxX() const
 {
     int max = coords[0][0];
@@ -83,7 +116,9 @@ int BlocksPiece::maxX() const
     return max;
 }
 
-//return minimun y coordinate
+/*******************************************************************************
+ * @return minimum vertical coordinate occupied by piece segments
+ ******************************************************************************/
 int BlocksPiece::minY() const
 {
     int min = coords [0][1];
@@ -96,7 +131,9 @@ int BlocksPiece::minY() const
 }
 
 
-//return maxumun y coordinate
+/*******************************************************************************
+ * @return maximum vertical coordinate occupied by piece segments
+ ******************************************************************************/
 int BlocksPiece::maxY() const
 {
     int max = coords[0][1];
@@ -108,27 +145,40 @@ int BlocksPiece::maxY() const
 }
 
 
-//rotate block piece left
+/*******************************************************************************
+ * Rotate left method. Creates a new peice with the same shape, but rotated to
+ * the left
+ * @return BlocksPiece with coordinates rotated to the left
+ ******************************************************************************/
 BlocksPiece BlocksPiece::rotatedLeft() const
 {
+    //a rotated square block is the same as the original so return this object
     if (pieceShape == SquareShape){
         return *this;
     }
 
+    //create new peice
     BlocksPiece result;
 
+    //set new piece shape
     result.pieceShape = pieceShape;
 
+    //for each piece segment, translate the coords to the left
     for (int i = 0; i< 4; ++i){
         result.setX(i, y(i));
         result.setY(i,-x(i));
     }
 
+    //return new shape
     return result;
 
 }
 
-//rotate block piece right
+/*******************************************************************************
+ * Rotate right method. Creates a new peice with the same shape, but rotated to
+ * the right
+ * @return BlocksPiece with coordinates rotated to the right
+ ******************************************************************************/
 BlocksPiece BlocksPiece::rotatedRight() const
 {
     if (pieceShape == SquareShape){
@@ -142,6 +192,7 @@ BlocksPiece BlocksPiece::rotatedRight() const
         result.setX(i, -y(i));
         result.setY(i,x(i));
     }
+
     return result;
 
 }

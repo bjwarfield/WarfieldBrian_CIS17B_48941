@@ -15,11 +15,12 @@ class BlocksBoard: public QFrame
     Q_OBJECT
 
 public:
+    //default constructor
     BlocksBoard(QWidget *parent = 0);
 
     void setNextPieceLabel(QLabel *label);
-    QSize sizeHint() const;
-    QSize minimunSizeHint() const;
+    QSize sizeHint() const Q_DECL_OVERRIDE;
+    QSize minimunSizeHint() const Q_DECL_OVERRIDE;
 
 public slots:
     void start();
@@ -31,13 +32,15 @@ signals:
     void linesRemovedChanged(int numLines);
 
 protected:
-    void paintEvent(QPaintEvent *event);
-    void keyPressEvent(QKeyEvent *event);
-    void timerEvent(QTimerEvent *event);
+    void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
+    void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
+    void timerEvent(QTimerEvent *event) Q_DECL_OVERRIDE;
 
 private:
+    //board array size enum constants
     enum {BoardWidth = 10, BoardHeight = 22};
 
+    //game control methods
     BlockShape &shapeAt(int x, int y);
     int timeoutTime();
     int squareWidth();
@@ -52,6 +55,7 @@ private:
     bool tryMove(const BlocksPiece &newPiece, int newX, int newY);
     void drawSquare(QPainter &painter, int x, int y, BlockShape shape);
 
+    //game variables
     QBasicTimer timer;
     QPointer<QLabel> nextPieceLabel;
     bool isStarted;
@@ -65,6 +69,7 @@ private:
     int numPiecesDropped;
     int score;
     int level;
+    //board array contains PieceShape enum value for each grid coordinate
     BlockShape board[BoardHeight * BoardWidth];
 
 

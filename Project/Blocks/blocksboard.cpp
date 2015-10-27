@@ -1,27 +1,46 @@
 #include "blocksboard.h"
 #include <QtGui>
+#include <iostream>
 
+using namespace std;
 
-//class constructor (qframe widget)
+/*******************************************************************************
+ * Default constructor. Config widget and initialize gamestate. Inherits QFrame
+ * @param parent widget
+ ******************************************************************************/
 BlocksBoard::BlocksBoard(QWidget *parent)
     :QFrame(parent)
 {
-    setFrameStyle(QFrame::Panel | QFrame::Sunken);
+
+    setFrameStyle(QFrame::Panel | QFrame::Sunken);//sunken panel style
+    //StrongFocus ensures this widget gets Keyboard input
     setFocusPolicy(Qt::StrongFocus);
+
+    //init gamestates
     isStarted = false;
     isPaused = false;
     clearBoard();
 
+    //set nextPiece
     nextPiece.setRandomShape();
+    curX = 0;
+    curY = BoardHeight;
 }
 
-//assign nexPieceLabel with constructed label
+/*******************************************************************************
+ * assign nexPieceLabel with constructed label
+ * @param label for nextPiece
+ ******************************************************************************/
 void BlocksBoard::setNextPieceLabel(QLabel *label)
 {
     nextPieceLabel = label;
 }
 
-//set size hints based on frame size
+
+/*******************************************************************************
+ * Provice size hints based on play area
+ * @return propritional size hint
+*******************************************************************************/
 QSize BlocksBoard::sizeHint() const
 {
     return QSize(BoardWidth * 15 + frameWidth() *2,
@@ -29,7 +48,10 @@ QSize BlocksBoard::sizeHint() const
 
 }
 
-//minimum size hint
+/*******************************************************************************
+ * Provice minimum size hints based on play area
+ * @return propritional minimum size hint
+*******************************************************************************/
 QSize BlocksBoard::minimunSizeHint() const
 {
     return QSize (BoardWidth * 5 + frameWidth() * 2,
@@ -38,7 +60,9 @@ QSize BlocksBoard::minimunSizeHint() const
 }
 
 
-//initialize and start game
+/*******************************************************************************
+ * Reset gameState, clear board and start game
+*******************************************************************************/
 void BlocksBoard::start()
 {
     if(isPaused){//do nothing if game is paused
@@ -66,18 +90,19 @@ void BlocksBoard::start()
     //start timer
     timer.start(timeoutTime(), this);
 
-
 }
 
-//pause the game
+/*******************************************************************************
+ * pause or unpause the game
+*******************************************************************************/
 void BlocksBoard::pause()
 {
-    //do nothinf if game hant started yet
+    //do nothing if game hasn't started yet
     if(!isStarted){
         return;
     }
 
-    //inverser pause status (True to false: False to True)
+    //inverse pause status (True to false: False to True)
     isPaused = !isPaused;
 
 
@@ -86,12 +111,17 @@ void BlocksBoard::pause()
     }else{
         timer.start(timeoutTime(), this);//continue timer if unpaused
     }
+    //update and redraw board widget
     update();
 }
 
 
 
-//paint board and board contents
+
+/*******************************************************************************
+ * paint board and board contents
+ * @param QPaintEvent
+*******************************************************************************/
 void BlocksBoard::paintEvent(QPaintEvent *event)
 {
    //pass event to parent class
@@ -107,14 +137,37 @@ void BlocksBoard::paintEvent(QPaintEvent *event)
         return;
     }
 
-    //determine top of board by subtracting the BoardHeight from the bottom coordinate
+    //determine top of board by subtracting the BoardHeight from the bottom
+    //coordinate
     int boardTop = rect.bottom() - BoardHeight*squareHeight();
 
     //draw blocks on the board
     for (int i = 0; i < BoardHeight; ++i) {//for each row
         for (int j = 0; j < BoardWidth; ++j) {//for each col
-            BlockShape shape = shapeAt(j, BoardHeight - i - 1);//check cell contents
-            if (shape != NoShape){//if cell is not empty            {
+            //check cell contents
+            BlockShape shape = shapeAt(j, BoardHeight - i - 1);
+            //if cell is not empty, or diretly under current piece
+
+            if (shape != NoShape ||//if not NoShape or
+                    //within the xCoords of piece
+                    (j >= curX + curPiece.minX() &&
+                     j <= curX + curPiece.maxX() &&
+                     isStarted
+                     )){
+                //helper column
+                if(shape == NoShape){//if NoShape
+                    //get the maximum value in column occupied by current piece
+                    int yMax = 0;
+                    for(int k=0; k<4; ++k){
+                        if(curX + curPiece.x(k) == j){
+                            yMax = qMax(yMax, curY - curPiece.y(k));
+                        }
+                    }
+                    //continue loop is NoShape is above max coord for current
+                    //piece
+                    if(i < -yMax + BoardHeight ) continue;
+
+                }
                 drawSquare(painter, rect.left() + j * squareWidth(),
                            boardTop + i * squareHeight(), shape);
             }//draw square in cell
@@ -125,8 +178,8 @@ void BlocksBoard::paintEvent(QPaintEvent *event)
     if(curPiece.shape() != NoShape){
         for (int i = 0; i< 4; ++i){
             int x = curX + curPiece.x(i);
-            int y = curY + curPiece.y(i);
-            drawSquare(painter, rect.left() + x* squareWidth(),
+            int y = curY - curPiece.y(i);
+            drawSquare(painter, rect.left() + x * squareWidth(),
                        boardTop + (BoardHeight - y - 1) * squareHeight(),
                        curPiece.shape());//draw each peice cell
         }
@@ -135,43 +188,54 @@ void BlocksBoard::paintEvent(QPaintEvent *event)
 }
 
 
-//key event handling
+/*******************************************************************************
+ * Key event handler. Manages keyevents
+ * @oaram keyEvent
+*******************************************************************************/
 void BlocksBoard::keyPressEvent(QKeyEvent *event)
 {
+    //pass event to parent if gamestate has not started
     if(!isStarted || isPaused || curPiece.shape() == NoShape){
         QFrame::keyPressEvent(event);
         return;
     }
 
+    //associate keyCode with appropriate method call
     switch(event->key()){
-    case Qt::Key_Left:
-        tryMove(curPiece, curX -1, curY);
+    case Qt::Key_A:
+        tryMove(curPiece, curX - 1, curY);
         break;
-    case Qt::Key_Right:
-        tryMove(curPiece, curX +1, curY);
+    case Qt::Key_D:
+        tryMove(curPiece, curX + 1, curY);
         break;
-    case Qt::Key_Down:
+    case Qt::Key_K:
         tryMove(curPiece.rotatedRight(), curX, curY);
         break;
-    case Qt::Key_Up:
+    case Qt::Key_J:
         tryMove(curPiece.rotatedLeft(), curX, curY);
         break;
     case Qt::Key_Space:
         dropDown();
         break;
-    case Qt::Key_D:
+    case Qt::Key_S:
         oneLineDown();
         break;
     default:
+        //pass to parent class
         QFrame::keyPressEvent(event);
     }
 
 }
 
-//timer event handler
+/*******************************************************************************
+ * TimerEvent method.
+ * @param QTimerEvent
+*******************************************************************************/
 void BlocksBoard::timerEvent(QTimerEvent *event){
 
+    //if event is triggered by game timer
     if(event->timerId() == timer.timerId()){
+        //do game logic
         if (isWaitingAfterLine){
             isWaitingAfterLine = false;
             newPiece();
@@ -180,49 +244,71 @@ void BlocksBoard::timerEvent(QTimerEvent *event){
             oneLineDown();
         }
     }else{
+        //pass event to parent class
         QFrame::timerEvent(event);
     }
 }
 
 
-//return shape at board coordinate
+/*******************************************************************************
+ * ShapeAt method returns shape enum value at board coordinate
+ * @return BlockShape value
+*******************************************************************************/
 BlockShape & BlocksBoard::shapeAt(int x, int y)
 {
     return board[(y * BoardWidth) + x];
 }
 
 
-//return time till next timerEvent
+/*******************************************************************************
+ *  timeoutTime method calculates the time until the next game timer event,
+ * valued at 1000/(1 + level)
+ * @return miliseconds till next time event
+*******************************************************************************/
 int BlocksBoard::timeoutTime()
 {
-    return 1000/ (1+level);
+//    return 1000/ (1+level);
+    return 1000;
 }
 
-//return square width
+/*******************************************************************************
+ * @return square width
+*******************************************************************************/
 int BlocksBoard::squareWidth(){
     return contentsRect().width() / BoardWidth;
 }
 
-//return square height
+/*******************************************************************************
+ * @return square height
+*******************************************************************************/
 int BlocksBoard::squareHeight()
 {
     return contentsRect().height() / BoardHeight;
 }
 
-//clear board grid
+
+/*******************************************************************************
+ * clear board grid
+*******************************************************************************/
 void BlocksBoard::clearBoard()
 {
-    for (int i = 0; i < BoardHeight; ++i){
+    //set each coordinate in board array to NoShape
+    for (int i = 0; i < BoardHeight * BoardWidth; ++i){
         board[i] = NoShape;
     }
 }
 
-//drop current piece down
+/*******************************************************************************
+ * drop current piece as far down as it will go
+*******************************************************************************/
 void BlocksBoard::dropDown()
 {
+
     int dropHeight = 0;
     int newY = curY;
+    //try to move piece down until it wont move anymore
     while (newY > 0){
+        //break loop on move down collision
         if (!tryMove(curPiece, curX, newY - 1)){
             break;
         }
@@ -234,7 +320,10 @@ void BlocksBoard::dropDown()
     pieceDropped(dropHeight);
 }
 
-//move current piece down one line
+
+/*******************************************************************************
+ * move current piece down one line
+*******************************************************************************/
 void BlocksBoard::oneLineDown()
 {
     if(!tryMove(curPiece, curX, curY -1)){
@@ -242,6 +331,9 @@ void BlocksBoard::oneLineDown()
     }
 }
 
+/*******************************************************************************
+ * Check for full rows and award points accordingly
+*******************************************************************************/
 void BlocksBoard::pieceDropped(int dropHeight)
 {
     for (int i = 0; i < 4; ++i){
@@ -268,7 +360,10 @@ void BlocksBoard::pieceDropped(int dropHeight)
 }
 
 
-//scan board grid and remove full lines
+
+/*******************************************************************************
+ * scan board grid and remove full lines
+*******************************************************************************/
 void BlocksBoard::removeFullLines()
 {
     int numFullLines = 0;//line counter
@@ -286,9 +381,12 @@ void BlocksBoard::removeFullLines()
 
         if(lineIsFull){//in line is full
             ++numFullLines; //increment full lines
-            for( int j = i; j < BoardHeight - 1; ++j){//for each row starting at active row
-                for(int k = 0; k < BoardWidth -1; ++k){//for cell in row
-                    shapeAt(k, j) = shapeAt(k, j+1); //copy row above to active row
+            //for each row starting at active row
+            for( int k = i; k < BoardHeight - 1; ++k){
+                 //for cell in row
+                for(int j = 0; j < BoardWidth -1; ++j){
+                    //copy row above to active row
+                    shapeAt(j, k) = shapeAt(j, k + 1);
                 }
             }
             for (int j= 0; j < BoardWidth; ++j){//for each column
@@ -310,12 +408,15 @@ void BlocksBoard::removeFullLines()
             timer.start(500, this);
             isWaitingAfterLine = true;
             curPiece.setShape(NoShape);
+            //update and redraw Board widget
             update();
         }
     }
 }
 
-//cycle next peice to current peice and generate new piece
+/*******************************************************************************
+ * cycle next peice to current peice and generate new piece
+*******************************************************************************/
 void BlocksBoard::newPiece()
 {
     curPiece = nextPiece;
@@ -331,7 +432,10 @@ void BlocksBoard::newPiece()
     }
 }
 
-//update label for next piece
+
+/*******************************************************************************
+ * update label for next piece
+*******************************************************************************/
 void BlocksBoard::showNextPiece()
 {
     if(!nextPieceLabel){
@@ -347,41 +451,55 @@ void BlocksBoard::showNextPiece()
     
     
     for(int i = 0; i< 4; ++i ){
-        int x = nextPiece.x(i) - nextPiece.minX() + 1;
-        int y = nextPiece.y(i) - nextPiece.minY() + 1;
-        drawSquare(painter, x* squareWidth() , y * squareHeight(), nextPiece.shape());
+        int x = nextPiece.x(i) - nextPiece.minX();
+        int y = nextPiece.y(i) - nextPiece.minY();
+        drawSquare(painter,
+                   x * squareWidth(),
+                   y * squareHeight(),
+                   nextPiece.shape());
     }
     nextPieceLabel->setPixmap(pixMap);
-
 }
 
-//attempt to move peice.
-//return true if successfull, false if not
+
+/*******************************************************************************
+ * tryMove method, attempt to move peice.
+ * @return true if successfull, false if not
+*******************************************************************************/
 bool BlocksBoard::tryMove(const BlocksPiece &newPiece, int newX, int newY)
 {
     for(int i = 0; i < 4; ++i){
-        int x= newX + newPiece.x(i);
-        int y = newY + newPiece.y(i);
+        int x = newX + newPiece.x(i);
+        int y = newY - newPiece.y(i);
 
-        if(x<0 || x >= BoardWidth || y < 0 || y <= BoardHeight) return false;//false if out of bounds
+        //return false if out of bounds
+        if(x < 0 || x >= BoardWidth || y < 0 || y >= BoardHeight){
+            return false;
+        }
 
-        if (shapeAt( x,y) !=NoShape) return false;//false if candidate cell is occupied
-
+        //false if candidate cell is occupied
+        if (shapeAt( x,y) !=NoShape){
+            return false;
+        }
 
     }
     //if all candidate cells are clear (NoShape)
     curPiece = newPiece;
     curX = newX;
     curY = newY;
+    //update and redraw board widget
     update();
     return true;
 }
 
-//draw blocks on the grid
+
+/*******************************************************************************
+ * draw blocks on the grid
+*******************************************************************************/
 void BlocksBoard::drawSquare(QPainter &painter, int x, int y, BlockShape shape)
 {
     static const QRgb colorTable[8] = {
-        0x000000,
+        0xDDDDDD,
         0xCC6666,
         0x66CC66,
         0x6666CC,
@@ -393,15 +511,21 @@ void BlocksBoard::drawSquare(QPainter &painter, int x, int y, BlockShape shape)
     };
 
     QColor color = colorTable[shape];//set color according to shape
-    painter.fillRect(x+1, y+1, squareWidth() - 2, squareHeight() -2, color);
 
-    painter.setPen(color.light());
-    painter.drawLine(x, y + squareHeight() - 1, x, y);
-    painter.drawLine(x, y, x + squareWidth() - 1, y);
 
-    painter.setPen(color.dark());
-    painter.drawLine(x + 1, y + squareHeight() - 1,
-                     x + squareWidth() - 1, y + squareHeight() - 1);
-    painter.drawLine(x + squareWidth() - 1, y + squareHeight() - 1,
-                     x + squareWidth() - 1, y + 1);
+    if(shape != NoShape){
+        painter.fillRect(x + 1, y + 1, squareWidth() - 2,
+                         squareHeight() -2, color);
+        painter.setPen(color.light());
+        painter.drawLine(x, y + squareHeight() - 1, x, y);
+        painter.drawLine(x, y, x + squareWidth() - 1, y);
+
+        painter.setPen(color.dark());
+        painter.drawLine(x + 1, y + squareHeight() - 1,
+                         x + squareWidth() - 1, y + squareHeight() - 1);
+        painter.drawLine(x + squareWidth() - 1, y + squareHeight() - 1,
+                         x + squareWidth() - 1, y + 1);
+    }else{
+        painter.fillRect(x , y , squareWidth(), squareHeight(), color);
+    }
 }
