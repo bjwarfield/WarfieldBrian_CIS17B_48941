@@ -1,7 +1,9 @@
 #include "blockswindow.h"
 #include "blocksboard.h"
 
+
 #include <QGridLayout>
+#include <QMenuBar>
 #include <QtGui>
 
 
@@ -51,6 +53,23 @@ BlocksWindow::BlocksWindow()
 
     //add widgets to grid layout
     QGridLayout *layout = new QGridLayout;
+
+
+    control = new Control();
+    control->hide();
+
+    //setup menubar with menus and submenus
+    menuBar = new QMenuBar();
+    optionsMenu = new QMenu("Options");
+    submenu[0] = new QAction("Controls",this);
+    menuBar->addMenu(optionsMenu);
+    optionsMenu->addAction(submenu[0]);
+
+    connect(submenu[0], SIGNAL(triggered(bool)), this, SLOT(controllsSetup()));
+
+
+    layout->setMenuBar(menuBar);
+
     layout->addWidget(createLabel(tr("NEXT")), 0, 0);
     layout->addWidget(nextPieceLabel, 1, 0);
     layout->addWidget(createLabel(tr("LEVEL")), 2, 0);
@@ -77,6 +96,11 @@ BlocksWindow::BlocksWindow()
 
 
 
+}
+
+void BlocksWindow::controllsSetup()
+{
+    control->show();
 }
 
 /*******************************************************************************

@@ -1,0 +1,13 @@
+INPUT(
+./release/main.o
+./release/startwindow.o
+./release/tetrisboard.o
+./release/tetriswindow.o
+./release/tetrispiece.o
+./release/control.o
+./release/qrc_images.o
+./release/moc_startwindow.o
+./release/moc_tetrisboard.o
+./release/moc_tetriswindow.o
+./release/moc_control.o
+);
