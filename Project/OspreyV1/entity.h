@@ -1,13 +1,17 @@
 #ifndef ENTITY_H
 #define ENTITY_H
 
+#include <QDebug>
 #include <QPainter>
 #include <QRect>
 #include "sprite.h"
 
 
-typedef qint64 ms;
+class Entity;
+typedef QSharedPointer<Sprite> s_ptr;
+typedef  QSharedPointer<Entity> e_ptr;
 enum polarType{WHITE, BLACK};
+enum entityType{PLAYER, SHOT, ENEMY, ENEMYSHOT, EFFECT};
 
 class Entity
 {
@@ -15,7 +19,7 @@ public:
     Entity(int x, int y, QString ref);
     virtual ~Entity();
 
-    virtual void move(ms delta);
+    virtual void move(double delta);
     void setHorizontalMovement(float dx);
     void setVerticalMovement(float dy);
     float getHorizontalMovement();
@@ -25,29 +29,39 @@ public:
 
     virtual void doLogic() = 0;
 
-    int getX(){return static_cast<int>(x);}
-    int getY(){return static_cast<int>(y);}
+    int getX()const{return static_cast<int>(x);}
+    int getY()const{return static_cast<int>(y);}
 
-    bool collidesWith(Entity * other);
-    virtual void collidedWith(Entity * other);
-
+    bool collidesWith(e_ptr other);
+    virtual void collidedWith(e_ptr other);
 
     QRect getHitBox() const;
 
     polarType getPolarity() const;
 
-private:
+    entityType getType() const;
+
+
+    bool getRemoveThis() const;
 
 protected:
     float x;
     float y;
 
-    Sprite sprite;
+    s_ptr sprite;
     float dx;
     float dy;
 
+    bool removeThis;
+
     QRect hitBox;
     polarType polarity;
+    entityType type;
+
+    QVector<s_ptr> frames;
+    double lastFrameChange;
+    int currentFrame;
+
 };
 
 

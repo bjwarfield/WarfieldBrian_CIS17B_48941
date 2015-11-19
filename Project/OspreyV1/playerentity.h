@@ -12,12 +12,12 @@ class PlayerEntity:public Entity
 {
 public:
     PlayerEntity(GameWidget * game, int x, int y);
-    void move(ms delta);
+    void move(double delta);
 
     void doLogic();
     void draw(QPainter * painter);
 
-    void collidedWith(Entity *other);
+    void collidedWith(e_ptr other);
 
     void setLeft(bool left);
     void setRight(bool right);
@@ -25,7 +25,10 @@ public:
     void setDown(bool down);
     void setTrigger(bool trigger);
     void setPolarize(bool polarize);
+    ~PlayerEntity();
 
+
+    int getEnergy() const;
 
 private:
     GameWidget * game;
@@ -41,14 +44,13 @@ private:
     int moveSpeed;
     const float DIAGONAL;
 
-    ms lastShot;
-    ms shotInterval;
+    double lastShot;
+    double shotInterval;
 
-
+    int energy;
 
     void shoot();
-protected:
-    polarType polarity;
+    void polarSwap();
 
 
 };

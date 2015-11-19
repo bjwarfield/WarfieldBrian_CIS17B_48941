@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>title/splash-image.png</file>
+        <file>backgrounds/clouds_01.png</file>
+        <file>title/osprey-logo.png</file>
+    </qresource>
+</RCC>

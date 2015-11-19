@@ -11,20 +11,22 @@ private:
     int shotSpeed;
     bool hit;
     GameWidget *game;
-    QVector<Sprite*> *frames;
 
 public:
     ShotEntity(GameWidget *game, int x, int y, polarType polarity);
     void draw(QPainter *painter);
 
     // Entity interface
-public:
-    void move(ms delta);
+    void move(double delta);
     void doLogic();
-    void collidedWith(Entity *other);
+    void collidedWith(e_ptr other);
+
+    ~ShotEntity();
+    bool getHit() const;
 
 protected:
-    polarType polarity;
+//    polarType polarity;
+//    entityType type;
 
     // Entity interface
 };

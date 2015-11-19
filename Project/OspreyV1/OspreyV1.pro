@@ -5,8 +5,9 @@
 #-------------------------------------------------
 
 QT       += core gui
-
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+
+CONFIG  += c++11
 
 TARGET = OspreyV1
 TEMPLATE = app
@@ -18,7 +19,11 @@ SOURCES += main.cpp \
     sprite.cpp \
     playerentity.cpp \
     entity.cpp \
-    shotentity.cpp
+    shotentity.cpp \
+    enemyentity.cpp \
+    enemyshotentity.cpp \
+    spritestore.cpp \
+    timer.cpp
 
 HEADERS  += \
     gamewidget.h \
@@ -26,9 +31,16 @@ HEADERS  += \
     entity.h \
     sprite.h \
     playerentity.h \
-    shotentity.h
+    shotentity.h \
+    enemyentity.h \
+    enemyshotentity.h \
+    spritestore.h \
+    timer.h
+
 
 RESOURCES += \
     resources.qrc
+
+DISTFILES +=
 
 

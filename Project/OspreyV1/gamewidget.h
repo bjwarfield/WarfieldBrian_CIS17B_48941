@@ -5,11 +5,10 @@
 
 #include <QMainWindow>
 #include <QWidget>
-#include <QElapsedTimer>
 #include <QTimer>
 
 class PlayerEntity;
-typedef qint64 ms;
+
 
 class GameWidget: public QWidget
 {
@@ -26,42 +25,39 @@ private:
     const long TARGETTIME;
     float averageFPS;
 
-    QMainWindow * container;
-    QWidget * panel;
-
-    PlayerEntity * ship;
+    QSharedPointer<PlayerEntity> ship;
 
 
 
-    QList<Entity*> entities;
-    QList<Entity*> removeList;
+    QList<e_ptr> entities;
 
     int pressCount;
 
-
+    bool spawn;
     bool enemyTrigger;
 
     bool waitingForKeyPressed;
 
     QString message;
 
-
     void initEntities();
+
+    void spawnEnemy();
 public:
     GameWidget(QWidget *parent = 0);
 
-    QElapsedTimer eTimer;
-    QTimer timer;
-    ms getTime(){return eTimer.elapsed();}
     void endGame(){gameRunning = false;}
 
     void gameLoop();
 
-    void removeEntity(Entity * entity);
+//    void removeEntity(Entity *entity);
     void notifyDeath();
     void startGame();
     void trigger();
-    QList<Entity *> &getEntities();
+    QList<e_ptr> &getEntities();
+
+    int rand(int low, int high);
+
 
 protected:
     void paintEvent(QPaintEvent * e);
