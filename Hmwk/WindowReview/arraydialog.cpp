@@ -3,7 +3,7 @@
 
 arraydialog::arraydialog(QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::Dialog)
+    ui(new Ui::Dialog())
 {
     ui->setupUi(this);
 }

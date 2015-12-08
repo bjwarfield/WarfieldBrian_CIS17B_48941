@@ -5,6 +5,7 @@
 #-------------------------------------------------
 
 include(Entity/entity.pri)
+include(Container/container.pri)
 include(GameState/gamestate.pri)
 include(LevelEditor/leveleditor.pri)
 include(Main/main.pri)

@@ -11,3 +11,4 @@ HEADERS += \
     arraydialog.h
 FORMS += \
     arraydialog.ui
+CONFIG  += c++11

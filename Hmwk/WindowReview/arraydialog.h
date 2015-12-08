@@ -3,9 +3,7 @@
 
 #include <QDialog>
 
-namespace Ui {
-class QDialog;
-}
+
 class arraydialog : public QDialog
 {
     Q_OBJECT
@@ -15,7 +13,7 @@ public:
     ~arraydialog();
 
 private:
-    Ui::QDialog *ui;
+    QDialog *ui;
 };
 
 #endif // ARRAYDIALOG_H
