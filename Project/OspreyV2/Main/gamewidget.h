@@ -1,68 +1,56 @@
 #ifndef GAMEWIDGET_H
 #define GAMEWIDGET_H
-#include "entity.h"
-#include "playerentity.h"
-#include "window.h"
+#include "Entity/entity.h"
+#include "Entity/playerentity.h"
+#include "Main/window.h"
+#include "GameState/gamestatemanager.h"
 
 #include <QMainWindow>
 #include <QWidget>
 #include <QTimer>
 
-class PlayerEntity;
 
+class PlayerEntity;
+class Window;
+class GameStateManager;
 
 class GameWidget: public QWidget
 {
     Q_OBJECT
 
 private:
+    Window *window;
 
-
-    Window window;
+    QSharedPointer<GameStateManager> gsm;
 
     bool gameRunning;
     const int FPS;
-    const long TARGETTIME;
     float averageFPS;
 
-    QSharedPointer<PlayerEntity> ship;
+    bool paused;
 
-    QList<e_ptr> entities;
-
-    int pressCount;
-
-    bool spawn;
-    bool enemyTrigger;
-
-    bool waitingForKeyPressed;
-
-    QString message;
-
-    void initEntities();
-
-    void spawnEnemy();
 public:
     enum {WIDTH = 800, HEIGHT = 600};
-    GameWidget(QWidget *parent = 0);
+    GameWidget(Window *parent);
 
+    void setTitle(QString title);
+    void startGame();
     void endGame(){gameRunning = false;}
 
     void gameLoop();
 
-    void notifyDeath();
-    void startGame();
-    void trigger();
-    QList<e_ptr> &getEntities();
-
-    int rand(int low, int high);
-
+    int rand(int min, int max);
+    float getFPS() const;
 
 protected:
     void paintEvent(QPaintEvent * e);
-
-
     void keyPressEvent(QKeyEvent *k);
     void keyReleaseEvent(QKeyEvent *k);
+
+
+protected:
+    void focusOutEvent(QFocusEvent *e);
+
 };
 
 #endif // GAMEWIDGET_H

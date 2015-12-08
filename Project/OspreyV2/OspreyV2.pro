@@ -6,11 +6,14 @@
 
 include(Entity/entity.pri)
 include(GameState/gamestate.pri)
+include(LevelEditor/leveleditor.pri)
 include(Main/main.pri)
 include(TileMap/tilemap.pri)
 include(Users/users.pri)
 include(Util/util.pri)
+
 QT       += core gui
+CONFIG  += c++11
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 

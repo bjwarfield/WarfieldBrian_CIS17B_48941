@@ -1,5 +1,5 @@
 #include "background.h"
-
+#include <cmath>
 
 Background::Background(QString ref, float ms):
 image(ref), moveScale(ms)
@@ -19,8 +19,8 @@ int Background::getY() const
 
 void Background::setPosition(float x, float y)
 {
-    this->x = (x * moveScale) % image.getWidth();
-    this->y - (x * moveScale) % image.getHeight();
+    this->x = fmod((x * moveScale), image.getWidth());
+    this->y = fmod((y * moveScale), image.getHeight());
 }
 
 void Background::setMovement(float dx, float dy)
@@ -34,8 +34,8 @@ void Background::gameUpdate(double delta)
     x += (dx*delta);
     y += (dy*delta);
     //bounds check
-    x = x % image.getWidth();
-    y = y % image.getHeight();
+    x = fmod( x , image.getWidth());
+    y = fmod(y , image.getHeight());
 }
 
 void Background::gameRender(QPainter *painter)
@@ -51,9 +51,9 @@ void Background::gameRender(QPainter *painter)
     //draw image tile
     if(image.getHeight() > 0 && image.getWidth() > 0){
         while(px > 0) px -= image.getWidth();
-        while(py > 0) py -= image.getHeight();
-        while(px + image.getWidth() < width){
-            while(py + image.getHeight() < height){
+        while(px < width + image.getWidth()){
+            while(py > 0) py -= image.getHeight();
+            while(py < height + image.getHeight()){
                 image.draw(painter, px, py);
                 py+= image.getHeight();
             }

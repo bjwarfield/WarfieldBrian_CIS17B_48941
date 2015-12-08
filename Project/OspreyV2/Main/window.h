@@ -1,7 +1,8 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 #include <QWidget>
-#include "gamewidget.h"
+#include "Main/gamewidget.h"
+class GameWidget;
 
 class Window: public QWidget
 {

@@ -1,10 +1,13 @@
-#include "menustate.h"
+#include <QtCore>
+#include "GameState/menustate.h"
 #include "Main/gamewidget.h"
 
-MenuState::MenuState(GameStateManager gsm):
-    logo(":/title/osprey-logo.png")
+MenuState::MenuState(GameStateManager *gsm):
+    GameState(gsm), logo(":/title/osprey-logo.png"),
+    grayFont(":/tilesets/AgencyGray34.png", ":/tilesets/Agency34.dat" ),
+    redFont(":/tilesets/AgencyRed34.png", ":/tilesets/Agency34.dat" )
 {
-    this->gsm = gsm;
+
 
     currentChoice = 0;
 
@@ -15,7 +18,9 @@ MenuState::MenuState(GameStateManager gsm):
     option[3] = "Quit";
 
     bg = QSharedPointer<Background>(new Background(":/backgrounds/clouds_01.png", 1.2));
-    bg->setMovement(-30,10);
+    bg->setMovement(-120,50);
+
+    le = NULL;
     init();
 
 }
@@ -33,21 +38,38 @@ void MenuState::gameUpdate(double delta)
 
 }
 
-void MenuState::gameRender(QPainter *painter)
+void MenuState::gameDraw(QPainter *painter)
 {
     bg->gameRender(painter);
-    logo.draw(painter, (GameWidget::WIDTH - logo.getWidth())/2, 75);
+    logo.draw(painter, gsm->getWidget()->width()/2, 200);
+
+
 
     for(int i = 0; i < option.size(); i++){
         QString s = option.at(i);
-        if(i == currentChoice){
-            painter->setPen(Qt::red);
-        }else{
-            painter->setPen(Qt::gray);
-        }
-        painter->font().setPointSize(34);
 
-        painter->drawText((GameWidget::WIDTH - QFontMetrics::width(s))/2,340 + i * 45);
+
+        if(i == currentChoice){
+            selectedFont = &redFont;
+//            painter->setPen(Qt::red);
+//            painter->setBrush(QBrush(Qt::white));
+            QPainterPath path;
+            path.addRoundedRect(
+                        QRectF((gsm->getWidget()->width()-255) / 2, 340 + i * 45,
+                               260, 39),8,8);
+            painter->fillPath(path, QBrush(QColor(255,255,255,100)));
+//            painter->fillRect((gsm->getWidget()->width()-255)/2, 340 + i*45,255,39,QBrush(Qt::white));
+        }else{
+            selectedFont = &grayFont;
+//            painter->setPen(Qt::gray);
+        }
+
+        selectedFont->draw(painter,s, (gsm->getWidget()->width()
+                           - selectedFont->getStringWidth(s))/2,340+i*45);
+//        QFont f = painter->font();
+//        f.setPointSize(34);
+//        painter->setFont(f);
+//        painter->drawText((GameWidget::WIDTH - painter->fontMetrics().width(s))/2,340 + i * 45, s);
 
     }
 
@@ -56,27 +78,53 @@ void MenuState::gameRender(QPainter *painter)
 
 void MenuState::keyPressed(int k)
 {
+    switch(k){
+    case Qt::Key_Return:
+        select();
+        break;
+    case Qt::Key_Up:
+        currentChoice--;
+        if(currentChoice < 0) currentChoice = option.size() - 1;
+        break;
+    case Qt::Key_Down:
+        currentChoice++;
+        if(currentChoice > option.size() - 1) currentChoice = 0;
+        break;
+    }
+
 }
 
 void MenuState::keyReleased(int k)
 {
+    Q_UNUSED(k);
 }
+
 
 void MenuState::select()
 {
     switch(currentChoice){
     case 0:
         //start game
-        gsm.setState(GameStateManager::LEVEL1STATE);
+        gsm->setState(GameStateManager::LEVEL1STATE);
         break;
     case 1:
         //TODO User Control Panel
         break;
     case 2:
         //TODO Level Editor
+        if(!le){
+            le = new levelEditor(gsm->getWidget());
+        }
+        le->show();
         break;
     case 3:
-        GameWidget.
+        gsm->getWidget()->endGame();
+        QTimer::singleShot(250,qApp,SLOT(quit()));
         break;
     }
+}
+
+MenuState::~MenuState()
+{
+
 }

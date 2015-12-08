@@ -1,13 +1,13 @@
-#include <QApplication>
-#include <QtCore>
-
-#include "window.h"
+//#include <QApplication>
+//#include <QtCore>
+#include "Main/qmyapp.h"
+#include "Main/window.h"
 
 
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
+    QMyApp a(argc, argv);
 
     Window window;
 

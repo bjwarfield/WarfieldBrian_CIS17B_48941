@@ -1,12 +1,11 @@
 
-#include "enemyentity.h"
-#include "gamewidget.h"
-#include "playerentity.h"
-#include "timer.h"
+#include "Main/gamewidget.h"
+#include "Entity/enemyentity.h"
+#include "Entity/playerentity.h"
+#include "Util/timer.h"
 
 #include <QLayout>
 #include <QPainter>
-#include <QThread>
 #include <QDebug>
 #include <QPaintEvent>
 #include <QtCore>
@@ -14,82 +13,62 @@
 #include <QtGlobal>
 
 
-GameWidget::GameWidget(QWidget *parent):
-    QWidget(parent),window(static_cast<Window>(parent)),
-    gameRunning(true), FPS(60), TARGETTIME(1000/FPS), pressCount(1),
-    waitingForKeyPressed(true),message("")
+
+/**
+ * @brief Object constructor
+ * @param parent
+ * @param wParent
+ */
+GameWidget::GameWidget(Window *parent):
+    QWidget(parent), gameRunning(true), FPS(60), paused(false)
 {
+    window = parent;
 
     qsrand((uint)QTime::currentTime().msec());
 
     setFixedSize(WIDTH, HEIGHT);
     setFocusPolicy(Qt::StrongFocus);
     setFocus();
-
-    initEntities();
-
     Timer::startTimer();
 
+    gsm = QSharedPointer<GameStateManager>(new GameStateManager(this));
 
 
-
-    spawn = enemyTrigger = false;
 }
 
-void GameWidget::initEntities(){
-
-    ship = QSharedPointer<PlayerEntity>(new PlayerEntity(this, WIDTH/2, HEIGHT-100) );
-
-    entities << ship;
-}
-
-void GameWidget::spawnEnemy()
+/**
+ * @brief Set Window Title
+ * @param title desired window title
+ */
+void GameWidget::setTitle(QString title)
 {
-    int xPop = rand(static_cast<int>(WIDTH*.05f),static_cast<int>(WIDTH*.95f));
-    e_ptr enemyShip (new EnemyEntity(
-                         this, xPop, -80, qrand()%2 == 0 ? WHITE : BLACK));
-    enemyShip->setVerticalMovement(rand(150,225));
-    entities.append(enemyShip);
-
-    spawn = false;
+    window->setWindowTitle(title);
 }
 
-
-//void GameWidget::removeEntity(Entity * entity)
-//{
-
-//    e_ptr e(entity);
-//    int idx = entities.indexOf(e);
-//    removeList.append(entities.at(idx));
-
-//}
-
-QList<e_ptr> &GameWidget::getEntities(){
-    return entities;
-}
-
-int GameWidget::rand(int low, int high)
+/**
+ * @brief Random Number Gerator
+ * @param min lowest desired number
+ * @param max highest desired number
+ * @return random integer between min and max (inclusive)
+ */
+int GameWidget::rand(int min, int max)
 {
-    return qrand() % ((high +1) -low) + low;
+    return qrand() % ((max +1) -min) + min;
 }
 
-void GameWidget::notifyDeath(){
-    message = "You have Died!";
-    ship->setHorizontalMovement(0);
-    ship->setVerticalMovement(0);
-    waitingForKeyPressed = true;
-}
 
-void GameWidget::trigger()
-{
-
-}
-
+/**
+ * @brief starts the main game loop
+ */
 void GameWidget::startGame(){
-    entities.clear();
-    initEntities();
+    gameRunning = true;
+    gameLoop();
 }
 
+/**
+ * @brief Main Game Loop, calls update on GameStateManager, qApp->ProcessEvents,
+ * updates(repaints) widget and sleeps the thread to sync to desired framerate
+ */
 void GameWidget::gameLoop()
 {
     double lastLoopTime;
@@ -101,78 +80,21 @@ void GameWidget::gameLoop()
     int frameCount = 0;
     int maxFrameCount = FPS;
 
-    QList<e_ptr>::iterator it;
-
     //main game loop
     while(gameRunning){
         delta = Timer::getTime() - lastLoopTime;
         lastLoopTime = Timer::getTime();
+
+
         qApp->processEvents();
 
-        if(!waitingForKeyPressed){
-
-
-            if(spawn){
-                spawnEnemy();
-            }
-
-            //move and do logic for all active entities
-            foreach (e_ptr e, entities) {
-               e->doLogic();
-               e->move(delta);
-            }
-
-//            for(int i = 0; i < entities.size(); i++){
-//                entities.at(i)->doLogic();
-//                entities.at(i)->move(delta);
-//            }
-
-
-            //brute force collision detection
-            for (int i = 0; i < entities.size(); i++){
-                for (int j = i+1; j< entities.size(); j++){
-                    e_ptr e1 = entities.at(i);
-                    e_ptr e2 = entities.at(j);
-
-                    if(e1->collidesWith(e2)){
-                        e1->collidedWith(e2);
-                        e2->collidedWith(e1);
-                    }
-                }
-
-            }
-
-
-            //all active enemies fire at ship (debugging)
-            if(enemyTrigger){
-                int lMax = entities.size();
-
-                for(int i = 0; i < lMax; i++){
-                    if(entities.at(i)->getType() == ENEMY){
-                        qSharedPointerCast<EnemyEntity>(entities.at(i))
-                                ->shoot(300, ship,0);
-                    }
-                }
-
-            }
-
-
-            //remove entities marked for removal
-            it = entities.begin();
-            while (it != entities.end()) {
-                if((*it)->getRemoveThis()){
-                    it = entities.erase(it);
-                }else{
-                    it++;
-                }
-            }
-
-
+        if(!paused){
+            gsm->gameUpdate(delta);
         }
 
         update();
-//        ms sleepTime = TARGETTIME - delta/1000;
-//        QThread::msleep(sleepTime);
+//        emit gameUpdated();
+
         Timer::sync(FPS);
 
         totalTime += Timer::getTime() - lastLoopTime;
@@ -186,132 +108,94 @@ void GameWidget::gameLoop()
     }
 }
 
+/**
+ * @brief Paint event override. Creates Qpainter object for this widget and
+ *  passes it to the GameStateManager
+ * @param e paint event
+ */
 void GameWidget::paintEvent(QPaintEvent *e)
 {
     QPainter painter;
     painter.begin(this);
     painter.setRenderHint(QPainter::Antialiasing);
 
-    painter.fillRect(e->rect(),QBrush(QColor(45, 10, 97)));
+    painter.fillRect(e->rect(),QBrush(QColor(45, 45, 75)));
 
-    if(!waitingForKeyPressed){
-        for(int i = 0; i < entities.size(); i++){
-            e_ptr entity = entities.at(i);
-
-            entity->draw(&painter);
-//            qDebug() << "Entity Size: " <<entities.size();
-        }
-
-        painter.setPen(Qt::red);
-        painter.drawText(15,15, "Average FPS: " + QString::number(averageFPS));
-        painter.drawText(15,30, "Entities: " + QString::number(entities.size()));
-        painter.drawText(15,45, "Player Energy: " + QString::number(ship->getEnergy()));
-
-
-//        painter.setPen(Qt::white);
-//        for (int i = 0; i < 8; ++i) {
-//            int n = 3*ship->getEnergy()-30*i;
-//            painter.fillRect(10 + 35*i,HEIGHT-25,qMin(n,30)-qMin(n,0),10, ship->getPolarity()==WHITE?  Qt::cyan :  Qt::red );
-//            painter.drawRect(10 + 35*i,HEIGHT-25,30,10);
-//        }
+    if(!paused){
+        gsm->gameDraw(&painter);
 
     }else{
         painter.setPen(Qt::white);
-        painter.drawText((WIDTH - painter.fontMetrics().width(message))/2,
-                         HEIGHT/2, message);
+        painter.drawText((WIDTH - painter.fontMetrics().width("Game Paused"))/2,
+                         HEIGHT/2, "Game Paused");
 
         painter.drawText((WIDTH - painter.fontMetrics()
-                          .width("W, A, S, D, for controls, Space to fire"))/2,
-                         static_cast<int>(HEIGHT * 0.55),
-                         "W, A, S, D, for controls, Space to fire");
+                          .width("Press Any Key to start"))/2,
+                         static_cast<int>(HEIGHT * 0.45),
+                         "Press Any Key to start");
 
     }
 
     painter.end();
 }
 
+/**
+ * @brief Override KeyPress event and pass params to GameStateMagager
+ * @param k key event
+ */
 void GameWidget::keyPressEvent(QKeyEvent * k){
     if(k->isAutoRepeat()){
         return;
     }
-    if(waitingForKeyPressed){
+    if(!gameRunning){
+        startGame();
+    }
+    if(paused){
         QWidget::keyPressEvent(k);
         return;
+    }else{
+        gsm->keyPressed(k->key());
     }
 
-    switch (k->key()) {
-    case Qt::Key_A:
-        ship->setLeft(true);
-        break;
-    case Qt::Key_D:
-        ship->setRight(true);
-        break;
-    case Qt::Key_W:
-        ship->setUp( true);
-        break;
-    case Qt::Key_S:
-        ship->setDown(true);
-        break;
-    case Qt::Key_Space:
-        ship->setTrigger(true);
-        break;
-    case Qt::Key_Comma:
-        ship->setPolarize(true);
-        break;
-    case Qt::Key_Enter:
-        spawn = true;
-        break;
-    case Qt::Key_0:
-        enemyTrigger = true;
-        break;
-    default:
-        QWidget::keyPressEvent(k);
-        break;
-    }
+
 }
 
+/**
+ * @brief Override KeyRelease event and pass params to GameStateMagager
+ * @param k key event
+ */
 void GameWidget::keyReleaseEvent(QKeyEvent *k){
     if(k->isAutoRepeat()){
         return;
     }
-    if(!waitingForKeyPressed){
+    if(!paused){
         switch (k->key()) {
-        case Qt::Key_A:
-            ship->setLeft(false);
-            break;
-        case Qt::Key_D:
-            ship->setRight(false);
-            break;
-        case Qt::Key_W:
-            ship->setUp(false);
-            break;
-        case Qt::Key_S:
-            ship->setDown(false);
-            break;
-        case Qt::Key_Space:
-            ship->setTrigger(false);
-            break;
-        case Qt::Key_Comma:
-            ship->setPolarize(false);
-            break;
-        case Qt::Key_Enter:
-            spawn = false;
-            break;
-        case Qt::Key_0:
-            enemyTrigger = false;
+        case Qt::Key_Pause:
+            paused = true;
             break;
         default:
-            QWidget::keyReleaseEvent(k);
-            break;
+            gsm->keyReleased(k->key());
         }
     }else{
-        if(pressCount == 1){
-            waitingForKeyPressed = false;
-            startGame();
-            pressCount = 0;
-        }else{
-            pressCount ++;
-        }
+            paused = false;
     }
 }
 
+/**
+ * @brief GameWidget::getFPS
+ * @return Average frames per second in main game loop
+ */
+float GameWidget::getFPS() const
+{
+    return averageFPS;
+}
+
+/**
+ * @brief Pause game when widget focs is lost
+ * @param e
+ */
+void GameWidget::focusOutEvent(QFocusEvent *e)
+{
+    paused = true;
+    (void)e;
+}

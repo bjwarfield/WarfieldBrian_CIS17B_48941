@@ -1,32 +1,39 @@
 #ifndef GAMESTATE_H
 #define GAMESTATE_H
 
-#include "gamestatemanager.h"
+#include "GameState/gamestatemanager.h"
 
-
+class GameStateManager;
 
 class GameState
 {
 public:
-    GameState();
+    GameState(GameStateManager *gsm);
     virtual void init() = 0;
     virtual void gameUpdate(double delta) = 0;
-    virtual void gameRender(QPainter *painter) = 0;
-    virtual void keyPressed(int k);
-    virtual void keyReleased(int k);
+    virtual void gameDraw(QPainter *painter) = 0;
+    virtual void keyPressed(int k) = 0;
+    virtual void keyReleased(int k) = 0;
 
 
-    QList<e_ptr> &getPlayerEntities() const;
-    QList<e_ptr> &getEnemyEntities() const;
-    QList<e_ptr> &getPlayers() const;
-    QList<e_ptr> &getEffects() const;
+    QList<e_ptr> &getPlayerEntities();
+    QList<e_ptr> &getEnemyEntities();
+    QList<e_ptr> &getPlayers();
+    QList<e_ptr> &getEffects();
 
     void notifyPlayerDeath();
 
     bool getPlayerControl() const;
 
+    virtual ~GameState();
+
+   int height() const;
+   int width() const;
+   QHash<QString, bool> getKeys() const;
+   int rand(int min, int max);
+
 protected:
-    GameStateManager gsm;
+    GameStateManager *gsm;
     bool playerIsAlive;
     double respawnTimer;
     bool playerControl;
@@ -34,10 +41,11 @@ protected:
     bool up, down, left, right, trigger, polarize, burst;
 
     //entity containers
-    const QList<e_ptr> playerEntities;
-    const QList<e_ptr> enemyEntities;
-    const QList<e_ptr> players;
-    const QList<e_ptr> effects;
+    QList<e_ptr> playerEntities;
+    QList<e_ptr> enemyEntities;
+    QList<e_ptr> players;
+    QList<e_ptr> effects;
+    void removeDeadEntities(QList<e_ptr> &list);
 
 };
 

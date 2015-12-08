@@ -1,42 +1,60 @@
-#include "gamestatemanager.h"
+#include "GameState/gamestatemanager.h"
+#include "GameState/menustate.h"
 
-GameStateManager::GameStateManager()
+#include "level1state.h"
+
+GameStateManager::GameStateManager(GameWidget *parent):
+    gw(parent)
 {
     gameStates.append(gs_ptr(new MenuState(this)));
     gameStates.append(gs_ptr(new Level1State(this)));
     currentState = MENUSTATE;
+
 }
 
-GameStateManager::setState(GameStateManager::state s)
+void GameStateManager::setState(GameStateManager::state s)
 {
     gameStates.at(s)->init();
     currentState = s;
 }
 
-Qlist<gs_ptr> &GameStateManager::getGateStates()
+QList<gs_ptr> &GameStateManager::getGameStates()
 {
     return gameStates;
 }
 
-GameStateManager::gameUpdate(double delta)
+void GameStateManager::gameUpdate(double delta)
 {
     gameStates.at(currentState)->gameUpdate(delta);
 }
 
-GameStateManager::gameRender(QPainter *painter)
+void GameStateManager::gameDraw(QPainter *painter)
 {
-    gameStates.at(currentState)->gameRender(painter);
+    gameStates.at(currentState)->gameDraw(painter);
 }
 
-GameStateManager::keyPressed(int k)
+void GameStateManager::keyPressed(int k)
 {
     gameStates.at(currentState)->keyPressed(k);
 }
 
-GameStateManager::keyReleased(int k)
+void GameStateManager::keyReleased(int k)
 {
     gameStates.at(currentState)->keyReleased(k);
 }
 
+int GameStateManager::rand(int min, int max)
+{
+    return gw->rand(min, max);
+}
 
 
+GameWidget *GameStateManager::getWidget() const
+{
+    return gw;
+}
+
+float GameStateManager::getFPS() const
+{
+    return gw->getFPS();
+}

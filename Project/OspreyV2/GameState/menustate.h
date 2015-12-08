@@ -1,31 +1,37 @@
 #ifndef MENUSTATE_H
 #define MENUSTATE_H
-#include "gamestate.h"
+#include "GameState/gamestate.h"
 #include "TileMap/background.h"
+#include "Util/font.h"
+#include "LevelEditor/leveleditor.h"
 
 class MenuState:public GameState
 {
 public:
-    MenuState(GameStateManager gsm);
+    MenuState(GameStateManager *gsm);
 
     // GameState interface
 public:
     void init();
     void gameUpdate(double delta);
-    void gameRender(QPainter *painter);
+    void gameDraw(QPainter *painter);
     void keyPressed(int k);
     void keyReleased(int k);
+    ~MenuState();
 
 private:
-
-    Background b;
     QSharedPointer<Background> bg;
 //    UserControlPanel ucp;
-//    EntityListEditor ele;
+
+    levelEditor *le;
     int currentChoice;
 
     QVector<QString> option;
     Sprite logo;
+
+    Font grayFont;
+    Font redFont;
+    Font *selectedFont;
 
     void select();
 };
