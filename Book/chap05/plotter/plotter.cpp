@@ -1,3 +1,5 @@
+#include <QStyleOptionFocusRect>
+#include <QStylePainter>
 #include <QtGui>
 #include <cmath>
 

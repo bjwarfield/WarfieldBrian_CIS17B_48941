@@ -1,7 +1,9 @@
 #ifndef ICONEDITORPLUGIN_H
 #define ICONEDITORPLUGIN_H
 
-#include <QDesignerCustomWidgetInterface>
+//#include <QDesignerCustomWidgetInterface>
+#include <QtUiPlugin/QDesignerCustomWidgetInterface>
+#include <QWidget>
 
 class IconEditorPlugin : public QObject,
                          public QDesignerCustomWidgetInterface

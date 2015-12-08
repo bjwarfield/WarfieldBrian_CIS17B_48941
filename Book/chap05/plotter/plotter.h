@@ -3,10 +3,11 @@
 
 #include <QMap>
 #include <QPixmap>
+#include <QToolButton>
 #include <QVector>
 #include <QWidget>
 
-class QToolButton;
+//class QToolButton;
 class PlotSettings;
 
 class Plotter : public QWidget
