@@ -3,11 +3,9 @@
 
 #include "virtual.h"
 
-class Base: virtual public Virtual
+class Base: public Virtual
 {
 private:
-    //hide empty constructor
-    Base();
 
 public:
     //Default Constructor
