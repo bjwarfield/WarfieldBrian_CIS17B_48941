@@ -7,4 +7,11 @@ HEADERS += \
     $$PWD/Queue.h \
     $$PWD/SortedLinkedList.h \
     $$PWD/SortOrder.h \
-    $$PWD/Stack.h
+    $$PWD/Stack.h \
+    $$PWD/hash.h \
+    $$PWD/GeneralHashFunctions.h \
+    $$PWD/simplevector.h \
+    $$PWD/tree.h
+
+SOURCES += \
+    $$PWD/GeneralHashFunctions.cpp

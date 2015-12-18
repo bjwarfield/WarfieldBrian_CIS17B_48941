@@ -3,18 +3,22 @@
 
 #include "GameState/gamestate.h"
 
+#include <TileMap/entitymap.h>
 #include <TileMap/tilemap.h>
 
 
 class Level1State:public GameState
 {
 private:
-    QSharedPointer<TileMap> tilemap;
+    QSharedPointer<TileMap> tileMap;
+    QSharedPointer<EntityMap> entityMap;
 
     double timeStart;
-    QVector<bool> events;
+    Vector<bool> events;
     bool levelEnd;
     double eventTimer;
+    int playerEnergy;
+    polarType playerPolarity;
     void moveEntities(double delta);
     void checkCollisions();
 

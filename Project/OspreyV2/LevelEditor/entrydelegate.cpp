@@ -19,9 +19,12 @@ QWidget *EntryDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem
             QComboBox *editor = new QComboBox(parent);
             switch(index.column()){
             case 1:
+                editor->addItem("EnemyProbe");
                 editor->addItem("EnemyScout");
                 editor->addItem("EnemyPestilence");
-                editor->addItem("EnemyNova");
+                editor->addItem("EnemyScarab");
+                editor->addItem("EnemyCruiser");
+                editor->addItem("EnemyCruiser");
                 break;
             case 2:
                 editor->addItem("WHITE");

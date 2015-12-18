@@ -2,6 +2,7 @@
 #define SPRITESTORE_H
 
 #include "sprite.h"
+#include "Container/hash.h"
 #include <iostream>
 #include <QHash>
 #include <QCoreApplication>
@@ -38,13 +39,14 @@ public:
 
 private:
     //maintain singleton status
-    SpriteStore(){}
+    SpriteStore():images(255){}
 
 
     SpriteStore(SpriteStore const&) = delete;
     void operator=(SpriteStore const&) = delete;
 
-    QHash<QString,p_ptr> images;
+    Hash<p_ptr> images;
+//    QHash<QString,p_ptr> images;
 
     void fail(QString mes){
         qCritical() << mes;

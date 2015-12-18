@@ -38,6 +38,13 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="sortEntries">
+        <property name="text">
+         <string>Sort Entries</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="removeEntry">
         <property name="text">
          <string>Delete Entry</string>

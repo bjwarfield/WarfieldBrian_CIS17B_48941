@@ -1,4 +1,6 @@
 #include "Entity/burstshot.h"
+#include "blasteffect.h"
+#include "enemyentity.h"
 #include <QtMath>
 
 BurstShot::BurstShot(GameState *game, int x, int y, float angle,
@@ -9,8 +11,8 @@ BurstShot::BurstShot(GameState *game, int x, int y, float angle,
 //    this->y = y;
 //    this->polarity = polarity;
     this->angle = angle;
-    this->dmg = 40;
-    shotSpeed = 1000;
+    this->dmg = 10;
+    shotSpeed = 750;
     rotatesSpeed = 1080;
 
     type = BURST;
@@ -40,6 +42,7 @@ BurstShot::~BurstShot()
 
 void BurstShot::doLogic(double delta)
 {
+    Q_UNUSED(delta);
     //set target to point directly above shot
     target.rx() = getX();
     target.ry() = getY()-1000;
@@ -155,6 +158,7 @@ void BurstShot::setTrail(){
     }
     if(trail.isEmpty()){
         removeThis = true;
+
     }
 }
 
@@ -166,7 +170,7 @@ void BurstShot::draw(QPainter *painter)
 
     QColor *currentColor = polarity == WHITE? &whiteBeam: &blackBeam;
     currentColor->setAlphaF(0.25f);
-    QPen pen(*currentColor, 10, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+    QPen pen(*currentColor, 15, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
     painter->setPen(pen);
     drawLines(painter, 15);
     currentColor->setAlphaF(0.5f);
@@ -230,7 +234,11 @@ void BurstShot::drawLines(QPainter *painter, int maxSegments){
 void BurstShot::collidedWith(const e_ptr &other)
 {
     if(other->getType() == ENEMY){
-        hit = true;
+        if(!(static_cast<EnemyEntity *>(other.data())->isDead())){
+            hit = true;
+            e_ptr blast(new BlastEffect(game,  getX(), getY(), polarity, width()/2,width()));
+            game->getEffects().append(blast);
+        }
     }
 }
 

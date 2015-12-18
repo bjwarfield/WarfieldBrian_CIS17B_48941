@@ -9,18 +9,23 @@
 #include "Util/sprite.h"
 
 
-class Entity;
-typedef QSharedPointer<Sprite> s_ptr;
-typedef  QSharedPointer<Entity> e_ptr;
-enum polarType{WHITE, BLACK};
-enum entityType{PLAYER, SHOT, BURST, ENEMY, ENEMYSHOT, EFFECT, SHIP};
 
+class Entity;
+typedef  QSharedPointer<Entity> e_ptr;
+typedef QSharedPointer<Sprite> s_ptr;
+enum polarType{WHITE, BLACK};
+enum entityType{PLAYER, SHOT, BURST, ENEMY, ENEMYSHOT, ENEMYBEAM, EFFECT, SHIP};
+
+#include <GameState/gamestate.h>
+
+#include <Container/simplevector.h>
+class GameState;
 class Entity
 {
 public:
 
-    Entity(int x, int y, QString ref);
-    Entity(Point point, QString ref);
+    Entity(GameState *game, int x, int y, QString ref);
+    Entity(GameState *game, Point point, QString ref);
     virtual ~Entity();
 
     virtual void move(double delta);
@@ -48,6 +53,8 @@ public:
     virtual bool collidesWith(const e_ptr &other);
     virtual void collidedWith(const e_ptr &other);
 
+    virtual void boundCheck();
+
     QRect getHitBox() const;
 
     polarType getPolarity() const;
@@ -60,6 +67,7 @@ public:
 
 
 protected:
+    GameState *game;
     //    float x;
 //    float y;
     Point pos;
@@ -69,13 +77,14 @@ protected:
 //    float dy;
     Point dir;
 
-    bool removeThis;
+    bool
+    removeThis;
 
     QRect hitBox;
     polarType polarity;
     entityType type;
 
-    QVector<s_ptr> frames;
+    Vector<s_ptr> frames;
     double lastFrameChange;
     int currentFrame;
 

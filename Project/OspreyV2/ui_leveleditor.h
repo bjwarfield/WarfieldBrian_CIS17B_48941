@@ -39,6 +39,7 @@ public:
     QVBoxLayout *verticalLayout_3;
     QPushButton *addEntry;
     QPushButton *copyEntry;
+    QPushButton *sortEntries;
     QPushButton *removeEntry;
     QVBoxLayout *entryView;
     QLabel *entryLabel;
@@ -87,6 +88,11 @@ public:
         copyEntry->setSizePolicy(sizePolicy);
 
         verticalLayout_3->addWidget(copyEntry);
+
+        sortEntries = new QPushButton(centralwidget);
+        sortEntries->setObjectName(QStringLiteral("sortEntries"));
+
+        verticalLayout_3->addWidget(sortEntries);
 
         removeEntry = new QPushButton(centralwidget);
         removeEntry->setObjectName(QStringLiteral("removeEntry"));
@@ -181,6 +187,7 @@ public:
         actionSave_As->setText(QApplication::translate("levelEditor", "Save As...", 0));
         addEntry->setText(QApplication::translate("levelEditor", "Add Entry", 0));
         copyEntry->setText(QApplication::translate("levelEditor", "Copy Entry", 0));
+        sortEntries->setText(QApplication::translate("levelEditor", "Sort Entries", 0));
         removeEntry->setText(QApplication::translate("levelEditor", "Delete Entry", 0));
         entryLabel->setText(QApplication::translate("levelEditor", "Entries", 0));
         addPath->setText(QApplication::translate("levelEditor", "Add path", 0));

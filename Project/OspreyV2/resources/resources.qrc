@@ -35,5 +35,10 @@
         <file>sprites/player/thrusters.png</file>
         <file>sprites/player/whiteSprite.png</file>
         <file>sprites/enemy/pestilence.png</file>
+        <file>sprites/enemy/probe.png</file>
+        <file>sprites/enemy/scarab.png</file>
+        <file>sprites/blank.png</file>
+        <file>sprites/enemy/cruiser.png</file>
+        <file>maps/level_1.enemies</file>
     </qresource>
 </RCC>

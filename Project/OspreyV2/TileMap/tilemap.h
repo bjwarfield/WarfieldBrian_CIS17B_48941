@@ -4,6 +4,8 @@
 #include <QJsonObject>
 #include <QPixMap>
 
+#include <Container/simplevector.h>
+
 
 
 class TileMap
@@ -20,7 +22,7 @@ private:
     int yMax;
 
     QJsonObject json;
-    QVector<int> map;
+    Vector<int> map;
     int xTileSize;
     int yTileSize;
     int numCols;
@@ -31,7 +33,7 @@ private:
     QPixmap tileSet;
     int numTilesAcross;
     int numTilesDown;
-    QVector<QSharedPointer<QPixmap> > tiles;
+    Vector<QSharedPointer<QPixmap> > tiles;
 
     int rowOffset;
     int colOffset;

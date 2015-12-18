@@ -6,6 +6,15 @@ INPUT(
 ./debug/shotentity.o
 ./debug/burstshot.o
 ./debug/enemypestilence.o
+./debug/enemyscarab.o
+./debug/enemylaserentity.o
+./debug/blasteffect.o
+./debug/bulletshield.o
+./debug/enemybeam.o
+./debug/enemycruiser.o
+./debug/enemyprobe.o
+./debug/enemyscout.o
+./debug/GeneralHashFunctions.o
 ./debug/gamestatemanager.o
 ./debug/gamestate.o
 ./debug/menustate.o
@@ -21,9 +30,13 @@ INPUT(
 ./debug/background.o
 ./debug/tilemap.o
 ./debug/entitymap.o
+./debug/usercontrolpanel.o
+./debug/user.o
+./debug/score.o
 ./debug/timer.o
 ./debug/sprite.o
 ./debug/font.o
+./debug/dbconnect.o
 ./debug/qrc_resources.o
 ./debug/moc_leveleditor.o
 ./debug/moc_entrymodel.o
@@ -31,4 +44,5 @@ INPUT(
 ./debug/moc_pathmodel.o
 ./debug/moc_window.o
 ./debug/moc_gamewidget.o
+./debug/moc_usercontrolpanel.o
 );

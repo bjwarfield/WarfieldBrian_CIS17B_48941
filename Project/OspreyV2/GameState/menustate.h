@@ -4,6 +4,8 @@
 #include "TileMap/background.h"
 #include "Util/font.h"
 #include "LevelEditor/leveleditor.h"
+#include "Users/usercontrolpanel.h"
+
 
 class MenuState:public GameState
 {
@@ -21,12 +23,12 @@ public:
 
 private:
     QSharedPointer<Background> bg;
-//    UserControlPanel ucp;
+    UserControlPanel *ucp;
 
     levelEditor *le;
     int currentChoice;
 
-    QVector<QString> option;
+    Vector<QString> option;
     Sprite logo;
 
     Font grayFont;

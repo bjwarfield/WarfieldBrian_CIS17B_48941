@@ -3,29 +3,35 @@
 #include <QFile>
 #include <QtCore>
 
-EntityMap::EntityMap(GameState *game, TileMap *map, QString ref):
-    game(game), map(map)
+#include <Entity/enemycruiser.h>
+#include <Entity/enemypestilence.h>
+#include <Entity/enemyprobe.h>
+#include <Entity/enemyscarab.h>
+#include <Entity/enemyscout.h>
+
+EntityMap::EntityMap(GameState *game, QSharedPointer<TileMap> &map, QString ref):
+    game(game)
 {
+    this->map = map;
     loadData(ref);
 }
 
 void EntityMap::update(double delta)
 {
+    Q_UNUSED( delta);
     x = map->getX();
     y = map->getY();
 
-    if(!enemies.isEmpty()){
-        while(enemies.firstKey() < y + map->getHeight()){
-            EnemyEntry *entry = enemies.first().data();
-            //TODO: Factory Constructor Pattern
-            (void) entry;
-            //game->getEnemyEntities().append( );//add constructed class to game
-            enemies.remove(enemies.firstKey());
+    //if enemyList isnt empty, scan min node for spawnTrigger
+     while(!enemies.isEmpty() && enemies.min().spawnTrigger < y + map->getHeight()){
 
-        }
+        game->getEnemyEntities().append(spawn(enemies.min()));
+        enemies.remove(enemies.min());
+        //game->getEnemyEntities().append( );//add constructed class to game
     }
 
-    (void) delta;
+
+
 }
 
 QJsonObject EntityMap::parseJSON(QString ref)
@@ -45,15 +51,15 @@ QJsonObject EntityMap::parseJSON(QString ref)
 void EntityMap::loadData(QString ref)
 {
     json = parseJSON(ref);
-    QJsonArray jsonEnemyArray = json["enemyList"].toArray();
-    if(jsonEnemyArray.size() > 0){
-        for(int i = 0; i < jsonEnemyArray.size(); i++){
-            QJsonObject je = jsonEnemyArray[i].toObject();
+    QJsonArray enemyList = json["enemyList"].toArray();
+    if(enemyList.size() > 0){
+        for(int i = 0; i < enemyList.size(); i++){
+            QJsonObject je = enemyList[i].toObject();
 
             EnemyEntry entry;
+            entry.spawnTrigger = je["spawnTrigger"].toInt();
             entry.enemyClass = je["enemyClassName"].toString();
-            entry.polarity = je["polarity"].toInt() % 2 == 0 ?
-                        WHITE : BLACK;
+            entry.polarity = je["polarity"].toInt() % 2 == 0 ? WHITE : BLACK;
             entry.spawnX = je["spawnX"].toInt();
             entry.spawnY = je["spawnY"].toInt();
 
@@ -64,11 +70,37 @@ void EntityMap::loadData(QString ref)
             }
 
             entry.spawnRef = je["spawnRef"].toString();
-            enemies.insert(je["spawnTrigger"].toInt(),
-                    QSharedPointer<EnemyEntry>(&entry));
+
+            enemies.add(entry);
+
         }
     }
 }
+
+e_ptr EntityMap::spawn(const EnemyEntry &entry)
+{
+    int sx = entry.spawnX;
+    int sy = entry.spawnY;
+    polarType pol = entry.polarity;
+    QString ref = entry.spawnRef;
+    Path *p = new Path;
+
+    for(Point pt: entry.paths){
+        p->addNode(pt);
+    }
+    if(entry.enemyClass.compare("EnemyScout")==0){
+        return e_ptr(new EnemyScout(game, sx, sy, pol, p ,ref));
+    }else if(entry.enemyClass.compare("EnemyScarab")==0){
+        return e_ptr(new EnemyScarab(game, sx, sy, pol, p ,ref));
+    }else if(entry.enemyClass.compare("EnemyPestilence")==0){
+        return e_ptr(new EnemyPestilence(game, sx, sy, pol, p ,ref));
+    }else if(entry.enemyClass.compare("EnemyCruiser")==0){
+        return e_ptr(new EnemyCruiser(game, sx, sy, pol, p ,ref));
+    }else{
+        return e_ptr(new EnemyProbe(game, sx, sy, pol, p ,ref));
+    }
+}
+
 
 
 float EntityMap::getX() const

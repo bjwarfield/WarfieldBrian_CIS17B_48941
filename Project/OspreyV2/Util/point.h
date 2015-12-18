@@ -17,7 +17,7 @@ public:
     Point(QPoint point){px = point.x();  py = point.y();}
     Point(const Point &point){px = point.x();  py = point.y();}
 
-    void setPotion(float px, float py);
+    void setPoint(float x, float y){px = x; py = y;}
 
     void setX(float x){px = x;}
 
@@ -48,20 +48,13 @@ public:
     }
 
     Point normalize()const{
+        float n = qSqrt(px*px + py*py);
 
-        float nx = px / qSqrt(px*px + py*py);
-        float ny = py / qSqrt(px*px + py*py);
-//        return Point(px < 0 ? -nx : nx, py < 0 ? -ny : ny);
+        float nx = px / n;
+        float ny = py / n;
+
         return Point( nx, ny);
     }
-
-//    Point truncate(float max)const{
-//        float i = max / this->distanceTo(Point(0,0));
-//        i = i < 1.0f ? 1.0f : i;
-
-//        return Point(i * px,i * py);
-
-//    }
 
     //return distance to point
     float distanceTo(const Point &point)const{
@@ -82,8 +75,6 @@ public:
         }
         return angle;
     }
-
-
 };
 
 #endif // POINT_H

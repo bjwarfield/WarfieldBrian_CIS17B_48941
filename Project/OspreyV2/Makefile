@@ -172,6 +172,7 @@ Makefile: OspreyV2.pro C:/Qt/Qt5.5.0/5.5/mingw492_32/mkspecs/win32-g++/qmake.con
 		C:/Qt/Qt5.5.0/5.5/mingw492_32/mkspecs/features/default_pre.prf \
 		C:/Qt/Qt5.5.0/5.5/mingw492_32/mkspecs/features/win32/default_pre.prf \
 		Entity/entity.pri \
+		Container/container.pri \
 		GameState/gamestate.pri \
 		LevelEditor/leveleditor.pri \
 		Main/main.pri \
@@ -199,6 +200,7 @@ Makefile: OspreyV2.pro C:/Qt/Qt5.5.0/5.5/mingw492_32/mkspecs/win32-g++/qmake.con
 		C:/Qt/Qt5.5.0/5.5/mingw492_32/lib/qtmaind.prl \
 		C:/Qt/Qt5.5.0/5.5/mingw492_32/lib/Qt5Widgets.prl \
 		C:/Qt/Qt5.5.0/5.5/mingw492_32/lib/Qt5Gui.prl \
+		C:/Qt/Qt5.5.0/5.5/mingw492_32/lib/Qt5Sql.prl \
 		C:/Qt/Qt5.5.0/5.5/mingw492_32/lib/Qt5Core.prl
 	$(QMAKE) -spec win32-g++ CONFIG+=debug -o Makefile OspreyV2.pro
 C:/Qt/Qt5.5.0/5.5/mingw492_32/mkspecs/features/spec_pre.prf:
@@ -314,6 +316,7 @@ C:/Qt/Qt5.5.0/5.5/mingw492_32/mkspecs/features/exclusive_builds.prf:
 C:/Qt/Qt5.5.0/5.5/mingw492_32/mkspecs/features/default_pre.prf:
 C:/Qt/Qt5.5.0/5.5/mingw492_32/mkspecs/features/win32/default_pre.prf:
 Entity/entity.pri:
+Container/container.pri:
 GameState/gamestate.pri:
 LevelEditor/leveleditor.pri:
 Main/main.pri:
@@ -341,6 +344,7 @@ OspreyV2.pro:
 C:/Qt/Qt5.5.0/5.5/mingw492_32/lib/qtmaind.prl:
 C:/Qt/Qt5.5.0/5.5/mingw492_32/lib/Qt5Widgets.prl:
 C:/Qt/Qt5.5.0/5.5/mingw492_32/lib/Qt5Gui.prl:
+C:/Qt/Qt5.5.0/5.5/mingw492_32/lib/Qt5Sql.prl:
 C:/Qt/Qt5.5.0/5.5/mingw492_32/lib/Qt5Core.prl:
 qmake: FORCE
 	@$(QMAKE) -spec win32-g++ CONFIG+=debug -o Makefile OspreyV2.pro

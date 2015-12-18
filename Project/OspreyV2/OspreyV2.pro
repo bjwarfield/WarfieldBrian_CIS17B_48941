@@ -14,6 +14,7 @@ include(Users/users.pri)
 include(Util/util.pri)
 
 QT       += core gui
+QT      += sql
 CONFIG  += c++11
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets

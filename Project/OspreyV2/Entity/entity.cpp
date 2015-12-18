@@ -2,14 +2,14 @@
 #include "entity.h"
 
 
-Entity::Entity(int x, int y, QString ref):
-    pos(x,y), removeThis(false)
+Entity::Entity(GameState *game, int x, int y, QString ref):
+    game(game), pos(x,y), removeThis(false)
 {
     sprite = s_ptr(new Sprite(ref));
 }
 
-Entity::Entity(Point point, QString ref):
-    pos(point), removeThis(false)
+Entity::Entity(GameState *game, Point point, QString ref):
+    game(game), pos(point), removeThis(false)
 {
     sprite = s_ptr(new Sprite(ref));
 }
@@ -93,6 +93,17 @@ bool Entity::collidesWith(const e_ptr &other)
 void Entity::collidedWith(const e_ptr &other)
 {
     Q_UNUSED(other);
+}
+
+void Entity::boundCheck()
+{
+    //bound check. Remove entity if it strays too far off entity map
+    if (getX() + (width() / 2) <  -50
+            || getX() - (width() / 2) > game->width()+ 50
+            || getY() - (height() / 2) > game->height() + 50
+            || getY() + (height() / 2) < - 50) {
+        removeThis = true;
+    }
 }
 QRect Entity::getHitBox() const
 {

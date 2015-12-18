@@ -3,7 +3,7 @@
 
 #include <QPainter>
 #include <QSharedPointer>
-
+#include "Container/DoubleLinkedList.h"
 #include "Main/gamewidget.h"
 #include "GameState/gamestate.h"
 
@@ -19,14 +19,14 @@ public:
 
 private:
     state currentState;
-    QList<gs_ptr> gameStates;
+    DList<gs_ptr> gameStates;
 
 public:
     GameStateManager(GameWidget *parent);
 
     GameWidget *gw;
     void setState(state s);
-    QList<gs_ptr> &getGameStates();
+    DList<gs_ptr> &getGameStates();
     void gameUpdate(double delta);
     void gameDraw(QPainter *painter);
     void keyPressed(int k);

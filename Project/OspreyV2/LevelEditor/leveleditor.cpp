@@ -18,7 +18,9 @@ levelEditor::levelEditor(QWidget *parent) :
     setWindowModified(false);
 
     //connect views to models, init view params
+
     ui->entryTable->setModel(entryModel);
+
     ui->entryTable->setItemDelegate(delegate);
     ui->entryTable->resizeRowsToContents();
     ui->entryTable->horizontalHeader()->setStretchLastSection(true);
@@ -96,6 +98,13 @@ void levelEditor::on_copyEntry_clicked()
     }
 }
 
+void levelEditor::on_sortEntries_clicked()
+{
+    //sort entry button
+    entryModel->sort();
+    entrySelectModel->clear();
+    statusBar()->showMessage("Entries Sorted", 2000);
+}
 void levelEditor::on_removeEntry_clicked()
 {
     //remove entry button
@@ -302,11 +311,12 @@ void levelEditor::closeEvent(QCloseEvent *e)
 {
     if(okToContinue()){
         e->accept();
-        newFile();
     }else{
         e->ignore();
     }
 }
+
+
 
 
 

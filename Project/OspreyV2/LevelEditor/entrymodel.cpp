@@ -160,6 +160,14 @@ void EntryModel::reset()
     endResetModel();
 }
 
+void EntryModel::sort()
+{
+    beginResetModel();
+    entryList.sort();
+    emit entryPath(NULL);
+    endResetModel();
+}
+
 void EntryModel::read(const QJsonObject &json)
 {
     beginResetModel();
@@ -194,10 +202,10 @@ void EntryModel::read(const QJsonObject &json)
 
 void EntryModel::write(QJsonObject &json) const
 {
-    QList<EnemyEntry>::const_iterator itr;
+    DList<EnemyEntry>::const_iterator itr;
 
     QJsonArray enemyList;
-    for (itr = entryList.begin(); itr != entryList.end(); itr++){
+    for (itr = entryList.cbegin(); itr != entryList.cend(); itr++){
         QJsonObject entry;
         entry["spawnTrigger"] = itr->spawnTrigger;
         entry["enemyClassName"] = itr->enemyClass;
@@ -209,7 +217,7 @@ void EntryModel::write(QJsonObject &json) const
         QJsonArray pathList;
 
         for(int j = 0; j < itr->paths.size(); j++){
-            QJsonArray path = {itr->paths[j].x(), itr->paths[j].y()};
+            QJsonArray path = {itr->paths.at(j).x(), itr->paths.at(j).y()};
 //            path.append(itr->paths[j].x());
 //            path.append(itr->paths[j].y());
             pathList.append(path);
@@ -225,11 +233,11 @@ EnemyEntry EntryModel::newEntry()
 {
     EnemyEntry entry;
     entry.spawnTrigger = 0;
-    entry.enemyClass = "EnemyScout";
+    entry.enemyClass = "EnemyProbe";
     entry.polarity = WHITE;
     entry.spawnX = 0;
     entry.spawnY = 0;
-    entry.spawnRef = "Test";
+    entry.spawnRef = "";
 
     return entry;
 }
@@ -240,7 +248,7 @@ void EntryModel::entryRow(const QModelIndex &current, const QModelIndex &previou
     if(current.isValid()){
         emit entryPath(&entryList[current.row()].paths);
     }else{
-//        QVector<Point> * entryPaths = NULL;
+//        Vector<Point> * entryPaths = NULL;
         emit entryPath(NULL);
     }
 }

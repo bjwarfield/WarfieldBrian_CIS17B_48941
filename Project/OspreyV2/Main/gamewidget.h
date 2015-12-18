@@ -1,7 +1,6 @@
 #ifndef GAMEWIDGET_H
 #define GAMEWIDGET_H
-#include "Entity/entity.h"
-#include "Entity/playerentity.h"
+
 #include "Main/window.h"
 #include "GameState/gamestatemanager.h"
 
@@ -10,7 +9,7 @@
 #include <QTimer>
 
 
-class PlayerEntity;
+
 class Window;
 class GameStateManager;
 

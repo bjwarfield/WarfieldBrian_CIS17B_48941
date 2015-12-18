@@ -23,6 +23,7 @@ public:
     Qt::ItemFlags   flags(const QModelIndex &index) const;
     bool            removeRows(int row, int count, const QModelIndex &parent);
     void            reset();
+    void            sort();
 
 
     //Json stuff
@@ -30,7 +31,7 @@ public:
     void            write(QJsonObject &json)const;
 
 private:
-    QList<EnemyEntry> entryList;
+    DList<EnemyEntry> entryList;
     EnemyEntry      newEntry();
 
 signals:
@@ -40,7 +41,6 @@ signals:
 public slots:
     void            entryRow(const QModelIndex &current, const QModelIndex &previous);
 };
-
 
 
 #endif // ENTRYMODEL_H

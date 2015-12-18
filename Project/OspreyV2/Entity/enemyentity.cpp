@@ -5,53 +5,56 @@
 
 
 EnemyEntity::EnemyEntity(GameState *game, int x, int y, polarType polarity, Path *path, QString ref):
-    Entity(x,y,ref), game(game)
+    Entity(game, x,y,ref)
 {
     this->path = path;
     this->polarity = polarity;
 
-    this->path = new Path;
-    this->path->addNode(Point(700,500));
-    this->path->addNode(Point(100,100));
-    this->path->addNode(Point(100,500));
-    this->path->addNode(Point(700,100));
-    this->path->addNode(Point(1000,100));
+    //init timers
+    startTime = Timer::getTime();
+    aDelta = 0;
+    ticker = moveTicks = lastMove = shotTicks = lastShot = 0;
 
     currentNode = 0;
-
-    //enemy stats
-    maxHealth = 20;
-    health = 20;
-    value = 100;
+    targetPlayer.setPoint(x, y+10);
 
     //init status
     hit = false;
     dead = false;
     type = ENEMY;
 
-    target.setX(x);
-    target.setY(y+10);
-
     //init movement
-    setVerticalMovement(0);
-    setHorizontalMovement(0);
+    dir.setPoint(0,0);
 
-    //assume 2 frames: topDown White/Black polarity
-    int cols = 1;
-    int rows = 2;
-    parseFrames(cols, rows);
 
-    sprite = frames.at(polarity);
 
-    //set Gun pos
-    gunX = x;
-    gunY = sprite->getHeight() /2;
-
-    //init timers
-    startTime = Timer::getTime();
-    ticker = moveTicks = lastMove = shotTicks = lastShot = 0;
 }
 
+void EnemyEntity::init()
+{
+    //    this->path = new Path;
+    //    this->path->addNode(Point(700,500));
+    //    this->path->addNode(Point(100,100));
+    //    this->path->addNode(Point(100,500));
+    //    this->path->addNode(Point(700,100));
+    //    this->path->addNode(Point(1000,100));
+
+        //enemy stats
+        maxHealth = 20;
+        health = 20;
+        value = 100;
+        maxSpeed = 250;
+
+        //assume 2 frames: topDown White/Black polarity
+        int cols = 1;
+        int rows = 2;
+        parseFrames(cols, rows);
+
+        sprite = frames.at(polarity);
+
+        //set Gun pos
+        gun.setPoint(getX(), getY() + sprite->getHeight() /2);
+}
 void EnemyEntity::parseFrames(int cols, int rows)
 {
     int tileHeight = sprite->getHeight()/rows;
@@ -78,7 +81,7 @@ void EnemyEntity::draw(QPainter *painter)
 
     QTransform trans;
     trans.translate(getX(), getY());
-    trans.rotate(-pos.angleTo(dir+pos));
+    trans.rotate(-angle);
 
     painter->setTransform(trans);
 
@@ -91,34 +94,39 @@ void EnemyEntity::draw(QPainter *painter)
     shadow->setOffset(xOffset, yOffset);
     shadow->setColor(QColor(0,0,0,115));
     sprite->drawWithEffect(painter, -20, -20, shadow,20);
+    if(hit){
+        sprite->drawShaded(painter, 0, 0, .8f, Qt::white);
+        hit = false;
+    }
 
     painter->restore();
     painter->save();
 
     //hitbox
-    painter->setPen(Qt::magenta);
-    painter->drawRect(hitBox);
+//    painter->setPen(Qt::magenta);
+//    painter->drawRect(hitBox);
 
-    //current velocity
-    painter->setPen(Qt::green);
-    painter->drawLine(getX(),
-                      getY(),
-                      getX() + dir.x(),
-                      getY() + dir.y()
-                      );
+
+//    //current velocity
+//    painter->setPen(Qt::green);
+//    painter->drawLine(getX(),
+//                      getY(),
+//                      getX() + dir.x(),
+//                      getY() + dir.y()
+//                      );
     //desired velocity
-    painter->setPen(Qt::blue);
-    painter->drawLine(getX(),
-                      getY(),
-                      getX() + tv.x(),
-                      getY() + tv.y());
+//    painter->setPen(Qt::blue);
+//    painter->drawLine(getX(),
+//                      getY(),
+//                      getX() + tv.x(),
+//                      getY() + tv.y());
 
-    //steering
-    painter->setPen(Qt::yellow);
-    painter->drawLine(getX() + dir.x(),
-                      getY() + dir.y(),
-                      getX() + dir.x() + (tv.x() - dir.x()) * 0.5f,
-                      getY() + dir.y() + (tv.y() - dir.y()) * 0.5f);
+//    //steering vector
+//    painter->setPen(Qt::yellow);
+//    painter->drawLine(getX() + dir.x(),
+//                      getY() + dir.y(),
+//                      getX() + dir.x() + (tv.x() - dir.x()) * 0.5f,
+//                      getY() + dir.y() + (tv.y() - dir.y()) * 0.5f);
 
 
     painter->restore();
@@ -132,11 +140,9 @@ void EnemyEntity::doLogic(double delta)
      if(game->getPlayers().size() > 0){
          int idx  = game->rand(0,game->getPlayers().size()-1);
          e_ptr player = game->getPlayers()[idx];
-         target.setX(player->getX());
-         target.setY(player->getY());
+         targetPlayer = player->getPos();
      }else{
-         target.setX(getX());
-         target.setY(getY()+30);
+         targetPlayer.setPoint(getX(), getY()+30);
      }
      elapsed = Timer::getTime() - startTime;
 
@@ -149,20 +155,20 @@ void EnemyEntity::doLogic(double delta)
     //update hitBox
      hitBox.setCoords(getX() - sprite->getWidth()/2, getY() - sprite->getHeight()/2,
                       getX() + sprite->getWidth()/2, getY() + sprite->getHeight()/2);
-     gunX = getX();
-     gunY = getY() + sprite->getHeight() /2;
 
 
-     followPath(delta);
+     aDelta += delta;
+     if(aDelta > 0.1){
+         followPath(aDelta);
+         aDelta = 0;
+     }
      angle = pos.angleTo(pos + dir);
 }
 
-void EnemyEntity::seek(const Point &trgt, double delta)
+void EnemyEntity::seek(const Point &trgt,float dist, double delta)
 {
-    float dist = pos.distanceTo(trgt);
-    tv = (trgt - pos).normalize() * Point(qMin(250.0f,dist) ,qMin(250.0f,dist));
-    sv = tv - dir;
-    sv = sv * Point(.75*delta, .75*delta);
+    tv = (trgt - pos).normalize() * Point(qMin(maxSpeed,dist) ,qMin(maxSpeed,dist));
+    sv = (tv - dir) * Point(delta, delta);
     dir = dir + sv;
 }
 
@@ -175,24 +181,23 @@ bool EnemyEntity::isDead()
 void EnemyEntity::shoot(int speed, const e_ptr &target, float deg)
 {
 
-    shoot(speed,QPoint(target->getX(),target->getY()),deg );
+    shoot(speed,target->getPos(),deg );
 
 }
 
-void EnemyEntity::shoot(int speed, QPoint target, float deg){
-    float xDiff = target.x() - getX();
-    float yDiff = target.y() - (getY() +( sprite->getHeight()/2));
+void EnemyEntity::shoot(int speed, Point target, float deg){
+    float rads = qDegreesToRadians(angle);
+    gun.setX(getX() + qSin(rads)*sprite->getHeight()/2);
+    gun.setY(getY() + qCos(rads)*sprite->getHeight()/2);
 
-    float rads = atan2f(xDiff,yDiff);
-    gunX = getX();
-    gunY = getY() + (sprite->getHeight()/2);
 
-    deg += game->rand(-20,20)/5.0f;
-    e_ptr shot(new EnemyShotEntity(game, gunX, gunY, polarity));
-    shot->setHorizontalMovement(speed * sin(rads + qDegreesToRadians(deg)));
-    shot->setVerticalMovement(speed * cos(rads + qDegreesToRadians(deg)));
+    e_ptr shot(new EnemyShotEntity(game, gun.x(), gun.y(), polarity));
+    shot->setHorizontalMovement(speed * sin( qDegreesToRadians(gun.angleTo(target))
+                                             + qDegreesToRadians(deg)));
+    shot->setVerticalMovement(speed * cos( qDegreesToRadians(gun.angleTo(target))
+                                           + qDegreesToRadians(deg)));
 
-    game->getEnemyEntities().push_back(shot);
+    game->getEnemyEntities().append(shot);
 }
 
 void EnemyEntity::collidedWith(const e_ptr &other)
@@ -200,9 +205,10 @@ void EnemyEntity::collidedWith(const e_ptr &other)
     if(!dead){
         if(other->getType() == SHOT || other->getType() == BURST){
 
+            hit = true;
             int dmg = qSharedPointerCast<ShotEntity>(other)->getDmg();
             if(other->getPolarity() == polarity){
-                health -= dmg/2;
+                health -= dmg;
             }else{
                 health -= dmg * 2;
             }
@@ -210,8 +216,24 @@ void EnemyEntity::collidedWith(const e_ptr &other)
             if(health <= 0){
                 dead = true;
                 removeThis = true;
+                if(other->getPolarity() == polarity){
+                    for (int i = 0; i < 15; ++i) {
+                        shoot(200 +game->rand(-30,30) , targetPlayer, game->rand(-20,20)/5.0);
+                    }
+                }
             }
         }
+    }
+}
+
+void EnemyEntity::boundCheck()
+{
+    //bound check. Remove entity if it strays too far off entity map
+    if (getX() + (width() / 2) <  -50
+            || getX() - (width() / 2) > game->width()+ 50
+            || getY() - (height() / 2) > game->height() + 50
+            || getY() + (height() / 2) < - 400) {
+        removeThis = true;
     }
 }
 
@@ -223,22 +245,26 @@ EnemyEntity::~EnemyEntity()
 }
 
 
+
+
 void EnemyEntity::followPath(double delta)
 {
+    float dist;
     Point target;
     if(path != NULL){
         target = (path->getNodes().data()[currentNode]);
-        if(target.distanceTo(pos) <= 40){
+        dist = pos.distanceTo(target);
+        if(dist <= 40){
             currentNode++;
 
             if(currentNode >= path->getNodes().size()){
                 currentNode = path->getNodes().size() -1;
             }
         }
-        seek(target, delta);
+        seek(target,dist, delta);
         return;
     }
-     seek(Point(getX(),getY()+1000), delta);
+     seek(Point(getX(),getY()+1000), 1000, delta);
 }
 
 

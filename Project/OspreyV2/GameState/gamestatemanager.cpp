@@ -14,33 +14,33 @@ GameStateManager::GameStateManager(GameWidget *parent):
 
 void GameStateManager::setState(GameStateManager::state s)
 {
-    gameStates.at(s)->init();
+    gameStates.get(s)->init();
     currentState = s;
 }
 
-QList<gs_ptr> &GameStateManager::getGameStates()
+DList<gs_ptr> &GameStateManager::getGameStates()
 {
     return gameStates;
 }
 
 void GameStateManager::gameUpdate(double delta)
 {
-    gameStates.at(currentState)->gameUpdate(delta);
+    gameStates.get(currentState)->gameUpdate(delta);
 }
 
 void GameStateManager::gameDraw(QPainter *painter)
 {
-    gameStates.at(currentState)->gameDraw(painter);
+    gameStates.get(currentState)->gameDraw(painter);
 }
 
 void GameStateManager::keyPressed(int k)
 {
-    gameStates.at(currentState)->keyPressed(k);
+    gameStates.get(currentState)->keyPressed(k);
 }
 
 void GameStateManager::keyReleased(int k)
 {
-    gameStates.at(currentState)->keyReleased(k);
+    gameStates.get(currentState)->keyReleased(k);
 }
 
 int GameStateManager::rand(int min, int max)

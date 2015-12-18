@@ -1,7 +1,5 @@
 
 #include "Main/gamewidget.h"
-#include "Entity/enemyentity.h"
-#include "Entity/playerentity.h"
 #include "Util/timer.h"
 
 #include <QLayout>
@@ -78,7 +76,7 @@ void GameWidget::gameLoop()
 
     double totalTime = 0;
     int frameCount = 0;
-    int maxFrameCount = FPS;
+    int maxFrameCount = 10;
 
     //main game loop
     while(gameRunning){

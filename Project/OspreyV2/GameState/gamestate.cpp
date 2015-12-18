@@ -1,27 +1,28 @@
 #include "gamestate.h"
 #include "Util/timer.h"
+#include "Entity/bulletshield.h"
 
 GameState::GameState(GameStateManager *gsm)
 {
     this->gsm = gsm;
 }
 
-QList<e_ptr> &GameState::getPlayerEntities()
+DList<e_ptr> &GameState::getPlayerEntities()
 {
     return playerEntities;
 }
 
-QList<e_ptr> &GameState::getEnemyEntities()
+DList<e_ptr> &GameState::getEnemyEntities()
 {
     return enemyEntities;
 }
 
-QList<e_ptr> &GameState::getPlayers()
+DList<e_ptr> &GameState::getPlayers()
 {
     return players;
 }
 
-QList<e_ptr> &GameState::getEffects()
+DList<e_ptr> &GameState::getEffects()
 {
     return effects;
 }
@@ -32,6 +33,8 @@ void GameState::notifyPlayerDeath()
     playerIsAlive = false;
     respawnTimer = Timer::getTime()+2;
     controlTimer = Timer::getTime()+4;
+    e_ptr shield(new BulletShield(this, 7));
+    playerEntities.append(shield);
 }
 bool GameState::getPlayerControl() const
 {
@@ -75,9 +78,9 @@ int GameState::rand(int min, int max)
  * @brief Remove entities marked for deletion
  * @param list
  */
-void GameState::removeDeadEntities(QList<e_ptr> &list)
+void GameState::removeDeadEntities(DList<e_ptr> &list)
 {
-    QList<e_ptr>::iterator it = list.begin();
+    DList<e_ptr>::iterator it = list.begin();
     while(it != list.end()){
         if((*it)->getRemoveThis()){
             it = list.erase(it);

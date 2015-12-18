@@ -3,7 +3,7 @@
 
 #include "Main/gamewidget.h"
 #include "Entity/entity.h"
-#include <QVector>
+#include <Vector>
 
 
 class ShotEntity: public Entity
@@ -11,8 +11,9 @@ class ShotEntity: public Entity
 protected:
    int shotSpeed;
    bool hit;
-   GameState *game;
    int dmg;
+   Vector<s_ptr> fragFrames;
+   int currentFrag;
 
 public:
    ShotEntity(GameState *game, int x, int y, polarType polarity);

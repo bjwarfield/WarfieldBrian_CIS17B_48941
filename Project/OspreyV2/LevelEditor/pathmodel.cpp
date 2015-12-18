@@ -121,11 +121,12 @@ bool PathModel::insertRows(int row, int count, const QModelIndex &parent)
  */
 bool PathModel::copyRow(int row)
 {
-    if(pathList && !pathList->empty() &&
+    if(pathList && !pathList->isEmpty() &&
             row >= 0 && row < pathList->size()){
         beginInsertRows(QModelIndex(), row, row);
 
         pathList->insert(row,Point(pathList->at(row)));
+        endInsertRows();
         return true;
     }
     return false;
@@ -167,7 +168,7 @@ Qt::ItemFlags PathModel::flags(const QModelIndex &index) const
 void PathModel::reset()
 {
     if(pathList){
-        if(!pathList->empty()){
+        if(!pathList->isEmpty()){
             beginResetModel();
             pathList->clear();
 

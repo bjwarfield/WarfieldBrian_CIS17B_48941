@@ -1,16 +1,13 @@
 #ifndef PLAYERENTITY_H
 #define PLAYERENTITY_H
 #include <QtMath>
-#include <QVector>
-#include "entity.h"
-#include "Main/gamewidget.h"
-#include "GameState/gamestate.h"
+#include "Container/simplevector.h"
+#include "Entity/entity.h"
 
-class GameState;
-enum throttle{OFF, FULL, TURBO};
 class PlayerEntity:public Entity
 {
 public:
+    enum throttle{OFF, FULL, TURBO};
     PlayerEntity(GameState *game, int x, int y);
     void move(double delta)Q_DECL_OVERRIDE;
 
@@ -26,10 +23,10 @@ public:
     void setThrottleSetting(const throttle &value);
 
 private:
-    GameState *game;
 
-    QVector<s_ptr> thrusterframes;
-    QVector<s_ptr> flashFrames;
+
+    Vector<s_ptr> thrusterframes;
+    Vector<s_ptr> flashFrames;
 
     //control variables
     bool left;
@@ -46,6 +43,7 @@ private:
 
     int moveSpeed;
     const float DIAGONAL;
+//    Point push;
 
     int haloSize;
     double lastShot;
@@ -60,6 +58,7 @@ private:
     void shoot();
     void shootBurst();
     void polarSwap();
+    void die();
 };
 
 #endif // PLAYERENTITY_H

@@ -6,6 +6,15 @@ INPUT(
 ./release/shotentity.o
 ./release/burstshot.o
 ./release/enemypestilence.o
+./release/enemyscarab.o
+./release/enemylaserentity.o
+./release/blasteffect.o
+./release/bulletshield.o
+./release/enemybeam.o
+./release/enemycruiser.o
+./release/enemyprobe.o
+./release/enemyscout.o
+./release/GeneralHashFunctions.o
 ./release/gamestatemanager.o
 ./release/gamestate.o
 ./release/menustate.o
@@ -21,9 +30,13 @@ INPUT(
 ./release/background.o
 ./release/tilemap.o
 ./release/entitymap.o
+./release/usercontrolpanel.o
+./release/user.o
+./release/score.o
 ./release/timer.o
 ./release/sprite.o
 ./release/font.o
+./release/dbconnect.o
 ./release/qrc_resources.o
 ./release/moc_leveleditor.o
 ./release/moc_entrymodel.o
@@ -31,4 +44,5 @@ INPUT(
 ./release/moc_pathmodel.o
 ./release/moc_window.o
 ./release/moc_gamewidget.o
+./release/moc_usercontrolpanel.o
 );

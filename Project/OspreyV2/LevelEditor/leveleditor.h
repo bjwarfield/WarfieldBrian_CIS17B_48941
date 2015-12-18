@@ -39,11 +39,14 @@ private slots:
 
     void on_copyPath_clicked();
 
+    void on_sortEntries_clicked();
+
 private:
 
     QString curFile;
     Ui::levelEditor *ui;
     EntryModel *entryModel;
+    QSortFilterProxyModel *pmodel;
     QItemSelectionModel *entrySelectModel;
     EntryDelegate *delegate;
 

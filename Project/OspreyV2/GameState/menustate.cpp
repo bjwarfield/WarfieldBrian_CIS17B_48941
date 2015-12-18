@@ -21,6 +21,7 @@ MenuState::MenuState(GameStateManager *gsm):
     bg->setMovement(-120,50);
 
     le = NULL;
+    ucp = NULL;
     init();
 
 }
@@ -108,16 +109,21 @@ void MenuState::select()
         gsm->setState(GameStateManager::LEVEL1STATE);
         break;
     case 1:
-        //TODO User Control Panel
+        //User Control Panel
+        if(!ucp){
+            ucp = new UserControlPanel(gsm->getWidget());
+        }
+        ucp->show();
         break;
     case 2:
-        //TODO Level Editor
+        //level editor
         if(!le){
             le = new levelEditor(gsm->getWidget());
         }
         le->show();
         break;
     case 3:
+        //close app
         gsm->getWidget()->endGame();
         QTimer::singleShot(250,qApp,SLOT(quit()));
         break;

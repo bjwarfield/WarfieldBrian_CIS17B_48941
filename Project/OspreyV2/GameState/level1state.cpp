@@ -1,8 +1,15 @@
 #include "level1state.h"
 #include "Util/timer.h"
 #include "Entity/entity.h"
+#include "Entity/playerentity.h"
+#include "Entity/enemyentity.h"
+#include "Entity/enemypestilence.h"
+#include "Entity/enemyscarab.h"
 
-#include <Entity/enemyentity.h>
+#include <Entity/enemycruiser.h>
+#include <Entity/enemyprobe.h>
+#include <Entity/enemyscout.h>
+
 
 
 /**
@@ -31,10 +38,15 @@ Level1State::~Level1State()
 void Level1State::init()
 {
     //initialize Tilemap
-    tilemap = QSharedPointer<TileMap>(new TileMap(":/maps/level_1.JSON"));
+    tileMap = QSharedPointer<TileMap>(new TileMap(":/maps/level_1.JSON"));
     //Set beginning positoin to bottom of map
-    tilemap->setPosition((width() - tilemap->getWidth())/2 ,
-                         -tilemap->getHeight() + height());
+    tileMap->setPosition((width() - tileMap->getWidth())/2 ,
+                         -tileMap->getHeight() + height());
+
+
+    //create entity map
+    entityMap = QSharedPointer<EntityMap>(
+                new EntityMap(this, tileMap,":/maps/level_1.enemies" ));
 
     //clear out existing entitylists
     getPlayerEntities().clear();
@@ -81,19 +93,26 @@ void Level1State::gameUpdate(double delta)
 
     //parallaxer
     float xShift = 0;
+    playerEnergy = 0;
+    playerPolarity = WHITE;
     if(getPlayers().size() > 0){
         int num = 0;
 
         for (int i = 0; i < getPlayers().size(); ++i) {
-            num+= getPlayers().at(i)->getHorizontalMovement();
+            PlayerEntity *pe = &*(getPlayers().at(i).staticCast<PlayerEntity>());
+            num+= pe->getHorizontalMovement();
+            playerEnergy = pe->getEnergy();
+            playerPolarity = pe->getPolarity();
+
         }
         xShift = num / (float) getPlayers().size();
     }
-    tilemap->setHorizontalMovement(xShift * -0.6f);
+    tileMap->setHorizontalMovement(xShift * -0.6f);
     //move map
-    tilemap->move(delta);
-
+    tileMap->move(delta);
     moveEntities(delta);
+    entityMap->update(delta);
+
 
     //respawn player when dead
     if(!playerIsAlive){
@@ -111,7 +130,7 @@ void Level1State::gameUpdate(double delta)
     if(!playerControl && Timer::getTime() > controlTimer && !levelEnd){
         playerControl = true;
         for(e_ptr player: getPlayers()){
-            qSharedPointerCast<PlayerEntity>(player)->setFlinching(2);
+            qSharedPointerCast<PlayerEntity>(player)->setFlinching(3);
         }
     }
 
@@ -126,7 +145,7 @@ void Level1State::gameUpdate(double delta)
             if(getEnemyEntities().at(i)->getType() == ENEMY
                     && getPlayers().size() >0 ){
                 qSharedPointerCast<EnemyEntity>(getEnemyEntities().at(i))
-                        ->shoot(300, getPlayers().at(0) ,0);
+                        ->shoot(300, getPlayers().at(0) ,rand(-20,20)/5.0f);
             }
         }
 
@@ -134,6 +153,10 @@ void Level1State::gameUpdate(double delta)
 
     //TODO: levelScripts
     (void) clockTimer;
+    if( events[0]){
+        events[0]= false;
+        tileMap->setVerticalMovement(80);
+    }
 
     //check entity collisions
     checkCollisions();
@@ -148,7 +171,7 @@ void Level1State::gameUpdate(double delta)
 void Level1State::gameDraw(QPainter *painter)
 {
     //draw map
-    tilemap->draw(painter);
+    tileMap->draw(painter);
 
     //draw map entities
     //entityMap.draw(painter);
@@ -164,22 +187,44 @@ void Level1State::gameDraw(QPainter *painter)
         shot->draw(painter);
     }
 
-    //draw effects
-    for(e_ptr effect: getEffects()){
-        effect->draw(painter);
-    }
 
     //draw player
     for(e_ptr player: getPlayers()){
         player->draw(painter);
     }
 
+    //draw effects
+    for(e_ptr effect: getEffects()){
+        effect->draw(painter);
+    }
+
+    //draw Energy bar
+    painter->save();
+    painter->setPen(Qt::white);
+    for(int i = 0; i < 8; i++){
+        int n = 3 * playerEnergy - 30 * i;
+        painter->fillRect(10, (height() - 5 - 35*i)-(qMin(n,30)-qMin(n,0)) , 10, qMin(n,30)-qMin(n,0),
+                          playerPolarity == WHITE ? Qt::cyan : Qt::red);
+        if(qMin(n,30)-qMin(n,0) == 30 && qRound(Timer::getTime()*16)%2==0 ){
+            painter->fillRect(10, (height() - 5 - 35*i)-(qMin(n,30)-qMin(n,0)) , 10, qMin(n,30)-qMin(n,0),
+                              playerPolarity == WHITE ? QColor(255,255,255,192) : QColor(0,0,0,192));
+        }
+        painter->drawRect(10, height() - 35 - 35*i, 10, 30);
+
+    }
+
+    painter->restore();
+
+
     //deebug info
     painter->setPen(Qt::red);
     painter->drawText(15, 15, "Average FPS: " + QString::number(gsm->getFPS()));
     painter->drawText(15, 30, "Players: " + QString::number(getPlayers().size()));
     painter->drawText(15, 45, "PlayerEntities: " + QString::number(getPlayerEntities().size()));
-    painter->drawText(15, 60, "EnemyEntities: " + QString::number(getEnemyEntities().size()));
+    painter->drawText(15, 60, "Player Energy: " + QString::number(playerEnergy));
+    painter->drawText(15, 75, "EnemyEntities: " + QString::number(getEnemyEntities().size()));
+    painter->drawText(15, 90, "MapPos: " + QString::number(tileMap->getX()) +
+                      " ," +QString::number(tileMap->getY() + tileMap->getHeight()));
 
 
 }
@@ -268,21 +313,14 @@ void Level1State::keyReleased(int k)
  */
 void Level1State::moveEntities(double delta)
 {
-    float xShift = tilemap->getHorizontalMovement();
-    float yShift = tilemap->getVerticalMovement();
+    float xShift = tileMap->getHorizontalMovement();
+    float yShift = tileMap->getVerticalMovement();
 
     //cycle round asking eash EnemyEntity ro move itself
     for(e_ptr enemyEntity: getEnemyEntities() ){
         enemyEntity->move(delta, xShift);
         enemyEntity->doLogic(delta);//do associated logic
-
-        //bound check. Remove entity if it strays too far off entity map
-        if (enemyEntity->getX() + (enemyEntity->width() / 2) < tilemap->getX() - 50
-                || enemyEntity->getX() - (enemyEntity->width() / 2) > tilemap->getX() + tilemap->getWidth() + 50
-                || enemyEntity->getY() - (enemyEntity->height() / 2) > gsm->getWidget()->height() + 50
-                || enemyEntity->getY() + (enemyEntity->height() / 2) < - 200) {
-            enemyEntity->setRemoveThis(true);
-        }
+        enemyEntity->boundCheck();
     }//end enemyEntity
 
     //cycle through each player entity asking it to move itsef
@@ -294,22 +332,14 @@ void Level1State::moveEntities(double delta)
         }
 
         playerEntity->doLogic(delta);
-
-        //bound check. Remove entity if it strays too far off entity map
-        if (playerEntity->getX() + (playerEntity->width() / 2) < tilemap->getX() - 50
-                || playerEntity->getX() - (playerEntity->width() / 2) > tilemap->getX() + tilemap->getWidth() + 50
-                || playerEntity->getY() - (playerEntity->height() / 2) > gsm->getWidget()->height() +50
-                || playerEntity->getY() + (playerEntity->height() / 2) < - 20) {
-            if(playerEntity->getType() != BURST){
-                playerEntity->setRemoveThis(true);
-            }
-        }
+        playerEntity->boundCheck();
     }//end playerEntity
 
     //move effects
     for(e_ptr effect:getEffects()){
         effect->move(delta, xShift);
         effect->doLogic(delta);
+
     }
 
     //move player
@@ -359,9 +389,9 @@ void Level1State::spawnEnemy()
     int xPop = rand(static_cast<int>(width()*.05f),
                         static_cast<int>(width()*0.95f));
 
-    e_ptr enemyShip(new EnemyEntity(this, xPop, -50, rand(0,1)== 0 ? WHITE: BLACK));
-    enemyShip->setVerticalMovement(rand(100,250));
-    getEnemyEntities() << enemyShip;
+    e_ptr enemyShip(new EnemyScarab(this, xPop, 700, rand(0,1)== 0 ? WHITE: BLACK));
+//    enemyShip->setVerticalMovement(rand(100,250));
+    getEnemyEntities().append(enemyShip);
     spawn = false;
 }
 

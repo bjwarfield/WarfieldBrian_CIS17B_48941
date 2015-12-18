@@ -1,6 +1,6 @@
 #ifndef ENEMYENTITY_H
 #define ENEMYENTITY_H
-#include <QVector>
+#include "Container/simplevector.h"
 #include "Entity/entity.h"
 #include "Main/gamewidget.h"
 
@@ -9,10 +9,10 @@ class GameWidget;
 //path following behavior
 struct Path{
 private:
-    QVector<Point> nodes;
+    Vector<Point> nodes;
 public:
     void addNode(Point node){nodes.append(node);}
-    QVector<Point> getNodes()const{return nodes;}
+    Vector<Point> &getNodes(){return nodes;}
 };
 
 class EnemyEntity: public Entity
@@ -21,51 +21,51 @@ class EnemyEntity: public Entity
 public:
     EnemyEntity(GameState *game, int x, int y, polarType polarity = WHITE,
                 Path *path = NULL, QString ref = ":/sprites/enemy/scout.png");
-    void draw(QPainter *painter)Q_DECL_OVERRIDE;
-    void doLogic(double delta)Q_DECL_OVERRIDE;
+    virtual void draw(QPainter *painter)Q_DECL_OVERRIDE;
+    virtual void doLogic(double delta)Q_DECL_OVERRIDE;
+    virtual void shoot(int speed, const e_ptr &targetPlayer, float deg);
+    virtual void shoot(int speed, Point targetPlayer, float deg);
+    virtual void collidedWith(const e_ptr &other)Q_DECL_OVERRIDE;
+    virtual void boundCheck();
     bool isDead();
-    void shoot(int speed, const e_ptr &target, float deg);
-    void shoot(int speed, QPoint target, float deg);
-    void collidedWith(const e_ptr &other)Q_DECL_OVERRIDE;
 
-    ~EnemyEntity();
+    virtual ~EnemyEntity();
 
 protected:
-    GameState *game;
+
 
     int maxHealth;
     int health;
     int value;
     bool hit;
     bool dead;
-    int gunX;
-    int gunY;
-
+    Point gun;
 
     double startTime;
     double elapsed;
     double ticker;
+    double aDelta;
     int moveTicks;
     int lastMove;
     int shotTicks;
     int lastShot;
 
     float angle;
-    int speed;
+    float maxSpeed;
 
-    Point target;
+    Point targetPlayer;
     float targetAngle;
 
     Path *path;
     int currentNode;
 
-    Point tv;//target bector
+    Point tv;//target vector
     Point sv;//steering vector
 
-
-    void seek(const Point &trgt, double delta);
-    void followPath(double delta);
-    void parseFrames(int cols, int rows);
+    virtual void init();
+    virtual void seek(const Point &trgt, float dist, double delta);
+    virtual void followPath(double delta);
+    virtual void parseFrames(int cols, int rows);
 
 
 

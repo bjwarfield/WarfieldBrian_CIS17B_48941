@@ -10,13 +10,13 @@ public:
 
     // Entity interface
 public:
-    void draw(QPainter *painter)Q_DECL_OVERRIDE;
-    void doLogic(double delta)Q_DECL_OVERRIDE;
-    void collidedWith(const e_ptr &other)Q_DECL_OVERRIDE;
+    virtual void draw(QPainter *painter)Q_DECL_OVERRIDE;
+    virtual void doLogic(double delta)Q_DECL_OVERRIDE;
+    virtual void collidedWith(const e_ptr &other)Q_DECL_OVERRIDE;
     ~EnemyShotEntity();
 
 protected:
-    GameState *game;
+    virtual void init();
     bool hit;
 
 };

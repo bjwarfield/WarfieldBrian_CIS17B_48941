@@ -22,14 +22,14 @@ public:
     void clear();
     void pushBack(T data);
     T popFront();
-    T back();
-    T front();
+    const T back();
+    const T front();
     bool isEmpty();
 
     virtual ~Queue();
 
 protected:
-    D_LinkedList<T> list;
+    DList<T> list;
 };
 
 /**
@@ -69,7 +69,7 @@ int Queue<T>::size(){
  */
 template<class T>
 void Queue<T>::clear(){
-    list.clearList();
+    list.clear();
 }
 
 /**
@@ -114,7 +114,7 @@ bool Queue<T>::isEmpty(){
  */
 template<class T>
 Queue<T>::~Queue(){
-    list.clearList();
+    list.clear();
 }
 
 #endif // QUEUE_H

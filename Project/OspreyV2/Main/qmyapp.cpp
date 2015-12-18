@@ -22,7 +22,6 @@ bool QMyApp::notify(QObject * receiver, QEvent *event)
                typeid(*receiver).name());
     }
 
-    // qFatal aborts, so this isn't really necessary
-    // but you might continue if you use a different logging lib
+
     return false;
 }
