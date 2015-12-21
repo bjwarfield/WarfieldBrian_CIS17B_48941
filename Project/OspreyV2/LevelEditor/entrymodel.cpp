@@ -233,11 +233,11 @@ EnemyEntry EntryModel::newEntry()
 {
     EnemyEntry entry;
     entry.spawnTrigger = 0;
-    entry.enemyClass = "EnemyProbe";
+    entry.enemyClass = "EnemyScout";
     entry.polarity = WHITE;
     entry.spawnX = 0;
     entry.spawnY = 0;
-    entry.spawnRef = "";
+    entry.spawnRef = "Test";
 
     return entry;
 }
@@ -248,7 +248,7 @@ void EntryModel::entryRow(const QModelIndex &current, const QModelIndex &previou
     if(current.isValid()){
         emit entryPath(&entryList[current.row()].paths);
     }else{
-//        Vector<Point> * entryPaths = NULL;
+//        QVector<Point> * entryPaths = NULL;
         emit entryPath(NULL);
     }
 }

@@ -135,21 +135,21 @@ void Level1State::gameUpdate(double delta)
     }
 
 
-    if(spawn)spawnEnemy();//debug
-    //all active enemies fire at ship (debugging)
-    if(enemyTrigger){
-        int lMax = getEnemyEntities().size();
+//    if(spawn)spawnEnemy();//debug
+//    //all active enemies fire at ship (debugging)
+//    if(enemyTrigger){
+//        int lMax = getEnemyEntities().size();
 
-        for(int i = 0; i < lMax; i++){
+//        for(int i = 0; i < lMax; i++){
 
-            if(getEnemyEntities().at(i)->getType() == ENEMY
-                    && getPlayers().size() >0 ){
-                qSharedPointerCast<EnemyEntity>(getEnemyEntities().at(i))
-                        ->shoot(300, getPlayers().at(0) ,rand(-20,20)/5.0f);
-            }
-        }
+//            if(getEnemyEntities().at(i)->getType() == ENEMY
+//                    && getPlayers().size() >0 ){
+//                qSharedPointerCast<EnemyEntity>(getEnemyEntities().at(i))
+//                        ->shoot(300, getPlayers().at(0) ,rand(-20,20)/5.0f);
+//            }
+//        }
 
-    }
+//    }
 
     //TODO: levelScripts
     (void) clockTimer;
@@ -384,6 +384,10 @@ void Level1State::checkCollisions()
 
 }
 
+/**
+ * @brief Level1State::spawnEnemy
+ * for testing different enemy classes
+ */
 void Level1State::spawnEnemy()
 {
     int xPop = rand(static_cast<int>(width()*.05f),
